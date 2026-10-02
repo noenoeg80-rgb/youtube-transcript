@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "transcript-ai": {
+      "type": "streamable-http",
+      "url": "https://youtube-transcript-anita-5823.vercel.app/api/mcp"
+    }
+  }
+}
