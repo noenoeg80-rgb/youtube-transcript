@@ -1,263 +1,139 @@
 <!doctype html>
 <html lang="id">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#09090b">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Transcript AI">
-  <title>Transcript AI — Video Panjang</title>
-  <style>
-    :root{
-      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
-      color:#f7f7f8;background:#09090b
-    }
-    *{box-sizing:border-box}
-    body{margin:0;min-height:100vh;background:
-      radial-gradient(circle at 15% 0%,rgba(111,78,255,.20),transparent 28rem),
-      radial-gradient(circle at 95% 20%,rgba(0,210,180,.09),transparent 22rem),#09090b}
-    main{width:min(100%,720px);margin:auto;padding:calc(34px + env(safe-area-inset-top)) 16px calc(36px + env(safe-area-inset-bottom))}
-    .hero{padding:24px 4px 20px}.tag,.eyebrow{font-size:11px;letter-spacing:.14em;font-weight:800;color:#9b98a6}
-    h1{font-size:clamp(44px,11vw,74px);line-height:.93;letter-spacing:-.055em;margin:10px 0 8px}
-    .hero p{color:#a6a3ad;line-height:1.5;margin:0}
-    .panel{margin-top:14px;padding:17px;border:1px solid rgba(255,255,255,.08);border-radius:22px;background:rgba(23,23,29,.78);backdrop-filter:blur(16px)}
-    label{display:block;font-size:13px;font-weight:750;color:#d2d0d7;margin-bottom:8px}
-    input,textarea{width:100%;border:1px solid rgba(255,255,255,.08);background:#101014;color:#f4f4f6;border-radius:15px;padding:14px 15px;font-size:16px;outline:none}
-    input:focus,textarea:focus{border-color:#765cff;box-shadow:0 0 0 4px rgba(118,92,255,.12)}
-    button{border:0;border-radius:15px;min-height:50px;font:inherit;font-weight:800;cursor:pointer}
-    .primary{width:100%;margin-top:11px;padding:14px;color:white;background:linear-gradient(135deg,#795fff,#593bf1)}
-    .secondary{width:100%;margin-top:9px;padding:13px;color:#eeeef2;background:#202027}
-    .primary:disabled{opacity:.6}
-    .status{margin-top:11px;padding:11px 13px;border-radius:13px;font-size:13px;line-height:1.4}
-    .ok{background:rgba(52,211,153,.10);color:#8ce8c5}
-    .err{background:rgba(255,77,106,.11);color:#ffa0b0}
-    .hidden{display:none}
-    .head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
-    h2{font-size:22px;letter-spacing:-.02em;margin:4px 0 0}
-    .lang{font-size:11px;font-weight:800;padding:7px 10px;border-radius:999px;background:#202027;color:#bbb8c3}
-    textarea{height:330px;resize:vertical;line-height:1.55;font-size:14px}
-    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
-    .chip{min-height:0;padding:10px 12px;border:1px solid rgba(255,255,255,.08);background:#15151a;color:#c5c2cb;border-radius:999px;font-size:13px}
-    .chip.active{color:#fff;background:rgba(118,92,255,.18);border-color:rgba(118,92,255,.55)}
-    .hint{font-size:12px;color:#77747f;text-align:center;margin:8px 0 0}
-    .foot{font-size:12px;color:#797681;line-height:1.55;margin:16px 3px}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#09090b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Transcript AI">
+<title>Transcript AI</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;color:#f7f7f8;background:#09090b}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 15% 0%,rgba(111,78,255,.18),transparent 28rem),#09090b}
+main{width:min(100%,720px);margin:auto;padding:calc(28px + env(safe-area-inset-top)) 16px calc(42px + env(safe-area-inset-bottom))}
+.hero{padding:20px 4px 16px}.tag,.eyebrow{font-size:11px;letter-spacing:.14em;font-weight:800;color:#9b98a6}
+h1{font-size:clamp(42px,11vw,68px);line-height:.95;letter-spacing:-.05em;margin:9px 0}.hero p,.muted,.foot{color:#888590;line-height:1.5}
+.panel{margin-top:14px;padding:16px;border:1px solid rgba(255,255,255,.08);border-radius:20px;background:rgba(23,23,29,.82)}
+label{display:block;font-size:13px;font-weight:750;color:#d2d0d7;margin:12px 0 7px}
+input,textarea,select{width:100%;border:1px solid rgba(255,255,255,.09);background:#101014;color:#f4f4f6;border-radius:14px;padding:13px 14px;font-size:16px;outline:none}
+textarea{min-height:300px;resize:vertical;line-height:1.55;font-size:14px}
+button,.buttonLink{border:0;border-radius:14px;min-height:50px;font:inherit;font-weight:800;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center}
+.primary{width:100%;margin-top:10px;padding:13px;color:#fff;background:linear-gradient(135deg,#795fff,#593bf1)}
+.secondary{width:100%;margin-top:9px;padding:13px;color:#eeeef2;background:#202027}
+.primary:disabled,.secondary:disabled{opacity:.45}.hidden{display:none!important}
+.status{margin-top:10px;padding:11px 12px;border-radius:12px;font-size:13px;line-height:1.45}.ok{background:rgba(52,211,153,.10);color:#8ce8c5}.err{background:rgba(255,77,106,.11);color:#ffa0b0}
+.head{display:flex;align-items:center;justify-content:space-between;gap:10px}.head h2{margin:4px 0 0}.lang{font-size:11px;font-weight:800;padding:7px 10px;border-radius:999px;background:#202027;color:#bbb8c3}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.chip{min-height:0;padding:9px 11px;border:1px solid rgba(255,255,255,.08);background:#15151a;color:#c5c2cb;border-radius:999px;font-size:13px}.chip.active{color:#fff;background:rgba(118,92,255,.18);border-color:rgba(118,92,255,.55)}
+.steps{display:grid;gap:8px;margin-top:13px}.step{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:center;padding:10px;border-radius:12px;background:#111116}.step b{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#24242c;color:#cbbfff}.step span{font-size:13px;color:#d4d1da}
+.progress{margin-top:12px;padding:12px;border:1px solid rgba(118,92,255,.28);border-radius:14px;background:rgba(118,92,255,.08)}.progress b{display:block;margin-bottom:5px}.progress p{margin:0;color:#a9a5b3;font-size:13px;line-height:1.45}
+.foot{font-size:12px;margin:11px 2px}.smallLink{display:block;text-align:center;color:#bfb4ff;padding:12px 4px;font-size:13px}
+@media(max-width:520px){main{padding-left:13px;padding-right:13px}.panel{padding:14px}textarea{min-height:280px}}
+</style>
 </head>
 <body>
 <main>
-  <section class="hero">
-    <div class="tag">TRANSCRIPT AI · V2.1 · LANGSUNG KE CHATGPT</div>
-    <h1>Transcript AI</h1>
-    <p>Masukkan link YouTube, ambil transcript, lalu kirim ke ChatGPT untuk dianalisis.</p>
-  </section>
+<section class="hero">
+  <div class="tag">TRANSCRIPT AI · STABIL UNTUK VIDEO PANJANG</div>
+  <h1>Transcript AI</h1>
+  <p>Ambil transcript YouTube, simpan otomatis di iPhone, lalu kirim ke ChatGPT dengan langkah terpisah supaya tidak gagal membuka aplikasi.</p>
+</section>
 
-  <section class="panel">
-    <label for="url">Link YouTube</label>
-    <input id="url" inputmode="url" autocapitalize="none" autocomplete="off" placeholder="https://youtu.be/...">
-    <button id="get" class="primary">Ambil Transcript</button>
-    <button id="cancel" class="secondary hidden">Batalkan</button>
-    <button id="new" class="secondary">↻ Transkrip Baru</button>
-    <label for="duration" style="margin-top:14px">Durasi video (opsional, contoh 2:12:08)</label>
-    <input id="duration" placeholder="Jam:menit:detik" inputmode="text">
-    <p class="foot">Durasi membantu memeriksa timestamp terakhir. Kelengkapan subtitle tetap bergantung pada sumber.</p>
-    <label for="import">Atau buka file transkrip TXT / SRT / VTT</label>
-    <input id="import" type="file" accept=".txt,.srt,.vtt,text/plain">
-    <div id="msg" role="status" aria-live="polite" class="status hidden"></div>
-  </section>
+<section class="panel">
+  <label for="url">Link YouTube</label>
+  <input id="url" inputmode="url" autocapitalize="none" autocomplete="off" placeholder="https://youtu.be/...">
+  <button id="get" class="primary">Ambil Transcript</button>
+  <button id="cancel" class="secondary hidden">Batalkan</button>
+  <button id="new" class="secondary">↻ Transkrip Baru</button>
+  <label for="duration">Durasi video (opsional)</label>
+  <input id="duration" placeholder="Contoh 2:12:08">
+  <label for="import">Atau buka TXT / SRT / VTT</label>
+  <input id="import" type="file" accept=".txt,.srt,.vtt,text/plain">
+  <div id="msg" class="status hidden" role="status" aria-live="polite"></div>
+</section>
 
-  <section id="result" class="panel hidden">
-    <div class="head">
-      <div><div class="eyebrow">HASIL</div><h2>Transcript</h2></div>
-      <span id="lang" class="lang">AUTO</span>
-    </div>
-    <p id="stats" class="foot"></p>
-    <div id="coverage" class="status"></div>
-    <label for="transcript">Teks transkrip (bisa diedit atau ditempel)</label>
-    <textarea id="transcript" spellcheck="false"></textarea>
-    <button id="copy" class="secondary">Salin Transcript</button>
-    <button id="download" class="secondary">Unduh Transkrip Utuh (.txt)</button>
-    <button id="restore" class="secondary">Pulihkan hasil terakhir di perangkat ini</button>
-  </section>
+<section id="result" class="panel hidden">
+  <div class="head"><div><div class="eyebrow">HASIL</div><h2>Transcript</h2></div><span id="lang" class="lang">AUTO</span></div>
+  <p id="stats" class="foot"></p>
+  <div id="coverage" class="status ok"></div>
+  <label for="transcript">Teks transcript</label>
+  <textarea id="transcript" spellcheck="false"></textarea>
+  <button id="copy" class="secondary">Salin Transcript</button>
+  <button id="download" class="secondary">Unduh Transcript (.txt)</button>
+</section>
 
-  <section id="analysis" class="panel hidden">
-    <div class="eyebrow">ANALISIS</div>
-    <h2>Pilih yang kamu butuhkan</h2>
-    <div class="chips">
-      <button class="chip active" data-mode="lengkap">Analisis lengkap</button>
-      <button class="chip" data-mode="bisnis">Insight bisnis</button>
-      <button class="chip" data-mode="poin">Poin penting</button>
-      <button class="chip" data-mode="entitas">Orang & perusahaan</button>
-      <button class="chip" data-mode="konten">Ide konten</button>
-    </div>
-    <button id="analyze" class="primary">Salin &amp; Buka Aplikasi ChatGPT ↗</button>
-    <p class="hint">Teks dan perintah analisis disalin utuh. Gunakan akun yang sudah login di aplikasi ChatGPT, lalu Tempel → Kirim.</p>
-    <div id="handoff-status" class="status hidden" role="status" aria-live="polite"></div>
-    <p id="app-retry" class="hint hidden">Jika aplikasi belum terbuka, <a href="chatgpt://" style="color:#c5baff">ketuk untuk membuka ChatGPT</a>, atau pindah ke aplikasi ChatGPT yang sudah Mas pakai. Teks tetap tersalin.</p>
-    <div id="manual-copy" class="hidden">
-      <label for="manual-payload">Jika salin otomatis gagal: salin teks ini, lalu buka ChatGPT.</label>
-      <textarea id="manual-payload" readonly></textarea>
-      <a href="chatgpt://" style="display:block;color:#c5baff;padding:16px">Buka Aplikasi ChatGPT ↗</a>
-    </div>
-    <details style="margin-top:16px"><summary style="cursor:pointer;color:#bdb8ce">Pilihan lain / jika teks terlalu panjang</summary>
-    <p class="foot">Jika ChatGPT menolak panjang pesan, gunakan salin bertahap di bawah atau lampirkan file analisis.</p>
-    <button id="analysis-download" class="secondary">Unduh File Analisis</button>
-    <div id="parts" class="panel">
-      <label for="part">Alternatif: salin bertahap untuk teks panjang</label>
-      <select id="part" style="width:100%;padding:14px;font-size:16px"></select>
-      <button id="copy-part" class="secondary">Salin Bagian Terpilih</button>
-      <p id="part-status" class="foot"></p>
-      <button id="synthesis" class="secondary">Salin Perintah Kesimpulan Akhir</button>
-    </div>
-    </details>
-  </section>
+<section id="analysis" class="panel hidden">
+  <div class="eyebrow">ANALISIS</div>
+  <h2>Pilih analisis</h2>
+  <div class="chips">
+    <button class="chip active" data-mode="lengkap">Analisis lengkap</button>
+    <button class="chip" data-mode="bisnis">Insight bisnis</button>
+    <button class="chip" data-mode="poin">Poin penting</button>
+    <button class="chip" data-mode="entitas">Orang & perusahaan</button>
+    <button class="chip" data-mode="konten">Ide konten</button>
+  </div>
+  <div class="steps">
+    <div class="step"><b>1</b><span>Tekan <strong>Siapkan / Salin Analisis</strong>.</span></div>
+    <div class="step"><b>2</b><span>Tekan <strong>Buka ChatGPT</strong>.</span></div>
+    <div class="step"><b>3</b><span>Di ChatGPT: tekan lama kolom pesan → Tempel → Kirim.</span></div>
+  </div>
+  <button id="prepare" class="primary">Siapkan / Salin Analisis</button>
+  <a id="open-chatgpt" class="buttonLink secondary" href="chatgpt://">Buka Aplikasi ChatGPT ↗</a>
+  <a class="smallLink" href="https://chatgpt.com/" target="_blank" rel="noreferrer">Kalau aplikasi tidak terbuka, buka ChatGPT di browser</a>
+  <div id="handoff" class="status hidden" role="status" aria-live="polite"></div>
 
-  <div class="foot">Setelah online di Vercel, situs ini bisa ditambahkan ke Home Screen iPhone dan dibuka full-screen seperti aplikasi.</div>
+  <div id="long-panel" class="progress hidden">
+    <b id="long-title">Transcript panjang</b>
+    <p id="part-status"></p>
+    <button id="next-part" class="secondary">Salin Bagian Berikutnya</button>
+    <button id="synthesis" class="secondary">Salin Perintah Kesimpulan Akhir</button>
+  </div>
+</section>
+
+<p class="foot">Hasil terakhir disimpan otomatis di perangkat ini. Kalau halaman ter-refresh atau Safari tertutup, buka lagi aplikasi ini dan transcript terakhir akan dipulihkan otomatis.</p>
 </main>
 
 <script>
-const $ = (s)=>document.querySelector(s);
-const urlEl=$("#url"), getBtn=$("#get"), msg=$("#msg"), result=$("#result"),
-      transcriptEl=$("#transcript"), langEl=$("#lang"), analysis=$("#analysis");
-let mode="lengkap";
-
+const $=s=>document.querySelector(s);
+const urlEl=$('#url'),getBtn=$('#get'),msg=$('#msg'),result=$('#result'),analysis=$('#analysis'),transcriptEl=$('#transcript'),langEl=$('#lang');
+const PART_SIZE=14000,DIRECT_LIMIT=52000;
+let mode='lengkap',sourceUrl='',parts=[],nextPartIndex=0,activeController=null,saveTimer=null;
 const prompts={
-  lengkap:"Analisa transcript ini secara menyeluruh. Buat ringkasan, poin penting, klaim utama, fakta/angka penting, nama orang/perusahaan/produk, insight bisnis, peluang, risiko, hal yang perlu diverifikasi, dan kesimpulan praktis.",
-  bisnis:"Analisa transcript ini dari sudut bisnis. Cari peluang pasar, calon customer, masalah yang bisa dijual solusinya, produk/perusahaan yang disebut, model bisnis, risiko, dan langkah konkret yang bisa ditindaklanjuti.",
-  poin:"Ambil poin paling penting dari transcript ini. Pisahkan fakta, opini pembicara, angka, dan kesimpulan.",
-  entitas:"Ekstrak semua nama orang, perusahaan, brand, produk, lokasi, organisasi, angka, harga, dan kontak yang disebut. Jelaskan konteks masing-masing.",
-  konten:"Analisa transcript ini untuk konten. Ambil hook kuat, fakta menarik, konflik/masalah, insight, angle konten, dan buat 10 ide short-form."
+ lengkap:'Analisa transcript ini secara menyeluruh. Buat ringkasan, poin penting, klaim utama, fakta/angka penting, nama orang/perusahaan/produk, insight bisnis, peluang, risiko, hal yang perlu diverifikasi, dan kesimpulan praktis.',
+ bisnis:'Analisa transcript ini dari sudut bisnis. Cari peluang pasar, calon customer, masalah yang bisa dijual solusinya, produk/perusahaan yang disebut, model bisnis, risiko, dan langkah konkret yang bisa ditindaklanjuti.',
+ poin:'Ambil poin paling penting dari transcript ini. Pisahkan fakta, opini pembicara, angka, dan kesimpulan.',
+ entitas:'Ekstrak semua nama orang, perusahaan, brand, produk, lokasi, organisasi, angka, harga, dan kontak yang disebut. Jelaskan konteks masing-masing.',
+ konten:'Analisa transcript ini untuk konten. Ambil hook kuat, fakta menarik, konflik/masalah, insight, angle konten, dan buat 10 ide short-form.'
 };
-
-
-const MAX_PART=12000;
-let activeController=null, savedTimer=null, parts=[], completed=new Set(), sourceUrl="";
-function videoId(v){
-  v=v.trim(); if(/^[\w-]{11}$/.test(v))return v;
-  try{const u=new URL(v),h=u.hostname.toLowerCase();
-    if(!['https:','http:'].includes(u.protocol))return null;
-    let id=null;
-    if(h==='youtu.be')id=u.pathname.split('/').filter(Boolean)[0];
-    if(h==='youtube.com'||h.endsWith('.youtube.com')){
-      id=u.searchParams.get('v');const a=u.pathname.split('/').filter(Boolean);
-      if(!id&&['shorts','live','embed'].includes(a[0]))id=a[1];
-    }return /^[\w-]{11}$/.test(id||'')?id:null;
-  }catch{return null}
-}
 function show(text,ok=true){msg.textContent=text;msg.className='status '+(ok?'ok':'err')}
-function seconds(t){
-  if(!/^\d+:\d{2}(?::\d{2})?$/.test(t))return null;
-  const a=t.split(':').map(Number);if(a.slice(1).some(n=>n>59))return null;
-  return a.reduce((v,n)=>v*60+n,0);
-}
+function handoff(text,ok=true){const e=$('#handoff');e.textContent=text;e.className='status '+(ok?'ok':'err')}
+function videoId(v){v=v.trim();if(/^[\w-]{11}$/.test(v))return v;try{const u=new URL(v),h=u.hostname.toLowerCase();let id=null;if(h==='youtu.be')id=u.pathname.split('/').filter(Boolean)[0];if(h==='youtube.com'||h.endsWith('.youtube.com')){id=u.searchParams.get('v');const a=u.pathname.split('/').filter(Boolean);if(!id&&['shorts','live','embed'].includes(a[0]))id=a[1]}return /^[\w-]{11}$/.test(id||'')?id:null}catch{return null}}
+function sec(t){if(!/^\d+:\d{2}(?::\d{2})?$/.test(t))return null;const a=t.split(':').map(Number);if(a.slice(1).some(n=>n>59))return null;return a.reduce((v,n)=>v*60+n,0)}
 function clock(n){n=Math.floor(n);return [Math.floor(n/3600),Math.floor(n/60)%60,n%60].map(x=>String(x).padStart(2,'0')).join(':')}
-function lastTimestamp(text){
-  // Only line-leading caption timestamps: ignore durations in the header.
-  const rx=/^\s*(?:\[)?(\d+:\d{2}(?::\d{2})?)(?:[.,]\d{3})?(?:\]|\s|$)/gm;
-  let m,last=null;while((m=rx.exec(text))){const n=seconds(m[1]);if(n!==null)last=Math.max(last??0,n)}return last;
-}
-function splitText(text,max=MAX_PART){
-  const out=[];let pos=0;
-  while(pos<text.length){let end=Math.min(pos+max,text.length);
-    if(end<text.length){const br=text.lastIndexOf('\n',end-1),sp=text.lastIndexOf(' ',end-1);
-      const cut=br>pos+max/2?br+1:sp>pos+max/2?sp+1:end;
-      end=cut;if(/[\uD800-\uDBFF]/.test(text[end-1]))end--;
-    }
-    out.push(text.slice(pos,end));pos=end;
-  }return out;
-}
-function refresh(){
-  const t=transcriptEl.value;parts=splitText(t);completed.clear();$('#handoff-status').classList.add('hidden');$('#app-retry').classList.add('hidden');$('#manual-copy').classList.add('hidden');$('#manual-payload').value='';
-  $('#stats').textContent=`${t.trim()?t.trim().split(/\s+/u).length.toLocaleString('id-ID'):0} kata · ${t.length.toLocaleString('id-ID')} karakter · ${parts.length} bagian`;
-  const last=lastTimestamp(t),duration=seconds($('#duration').value.trim());
-  const c=$('#coverage');c.className='status ok';
-  if($('#duration').value.trim()&&duration===null){c.textContent='Format durasi belum benar. Gunakan 2:12:08 atau 132:08.';c.className='status err'}
-  else if(last===null)c.textContent='Tidak ada timestamp yang terbaca. Kelengkapan transkrip belum dapat diperiksa.';
-  else if(duration&&last<duration-90){c.className='status err';c.textContent=`Periksa kelengkapan: timestamp terakhir ${clock(last)}, durasi video ${clock(duration)}. Mungkin ada bagian yang tidak terambil atau tanpa ucapan. Jangan anggap hasil ini lengkap.`}
-  else c.textContent=`Timestamp terakhir ${clock(last)}. ${duration?'Mendekati durasi yang dimasukkan; ini bukan jaminan semua ucapan tercakup.':'Isi durasi video untuk membandingkan. Kelengkapan belum terverifikasi.'}`;
-  const sel=$('#part');sel.replaceChildren();parts.forEach((p,i)=>{const o=document.createElement('option');o.value=i;o.textContent=`Bagian ${i+1} dari ${parts.length}`;sel.append(o)});updatePartStatus();
-  clearTimeout(savedTimer);savedTimer=setTimeout(()=>saveLast().catch(()=>show('Hasil tampil, tetapi gagal disimpan di perangkat. Unduh TXT agar tidak hilang.',false)),500);
-}
-function updatePartStatus(){ $('#part-status').textContent=`${completed.size} dari ${parts.length} bagian sudah disalin. Tempel semuanya secara berurutan ke percakapan ChatGPT yang sama, lalu kirim perintah kesimpulan.` }
-function db(){return new Promise((resolve,reject)=>{const r=indexedDB.open('transcript-ai-v2',1);r.onupgradeneeded=()=>r.result.createObjectStore('results');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
-async function saveLast(){if(!transcriptEl.value.trim())return;const d=await db();try{await new Promise((resolve,reject)=>{const tx=d.transaction('results','readwrite');tx.objectStore('results').put({text:transcriptEl.value,url:sourceUrl,duration:$('#duration').value,lang:langEl.textContent},'last');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)})}finally{d.close()}}
-async function restoreLast(){try{const d=await db();let v;try{v=await new Promise((resolve,reject)=>{const r=d.transaction('results').objectStore('results').get('last');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}finally{d.close()}if(!v){show('Belum ada hasil tersimpan.',false);return}transcriptEl.value=v.text;sourceUrl=v.url||'';urlEl.value=sourceUrl;$('#duration').value=v.duration;langEl.textContent=v.lang;refresh();show('Hasil terakhir dipulihkan.')}catch{show('Penyimpanan perangkat tidak tersedia.',false)}}
+function lastTimestamp(text){const rx=/^\s*(?:\[)?(\d+:\d{2}(?::\d{2})?)(?:[.,]\d{3})?(?:\]|\s|$)/gm;let m,last=null;while((m=rx.exec(text))){const n=sec(m[1]);if(n!==null)last=Math.max(last??0,n)}return last}
+function splitText(text,max=PART_SIZE){const out=[];let pos=0;while(pos<text.length){let end=Math.min(pos+max,text.length);if(end<text.length){const br=text.lastIndexOf('\n',end-1),sp=text.lastIndexOf(' ',end-1);end=br>pos+max/2?br+1:sp>pos+max/2?sp+1:end;if(/[\uD800-\uDBFF]/.test(text[end-1]))end--}out.push(text.slice(pos,end));pos=end}return out}
 function validResponse(t){return t.trim().length>20&&!/^\s*(?:<!doctype|<html|\{\s*"(?:error|detail)"|(?:error|not found|unavailable|access denied|rate limit)\b)/i.test(t)}
-async function loadTranscript(){
-  const id=videoId(urlEl.value);if(!id){show('Link YouTube tidak valid.',false);return}
-  const requestedUrl=`https://www.youtube.com/watch?v=${id}`;
-  getBtn.disabled=true;$('#import').disabled=true;$('#cancel').classList.remove('hidden');
-  const controller=new AbortController();activeController=controller;let last='Transkrip tidak tersedia.';
-  try{for(const lang of ['id','en','']){
-    if(controller.signal.aborted)break;
-    show(`Mengambil transkrip ${lang||'bahasa asli'}…`);
-    const attempt=new AbortController();const abort=()=>attempt.abort();controller.signal.addEventListener('abort',abort,{once:true});
-    const timer=setTimeout(()=>attempt.abort(),45000);
-    try{
-      const r=await fetch(`https://youtube-transcript.ai/transcript/${id}.txt${lang?'?lang='+lang:''}`,{signal:attempt.signal});
-      if(!r.ok){last=`Sumber transkrip merespons HTTP ${r.status}.`;continue}
-      const t=await r.text();if(!validResponse(t)){last='Sumber tidak mengembalikan teks transkrip yang valid.';continue}
-      if(controller.signal.aborted)break;
-      transcriptEl.value=t;sourceUrl=requestedUrl;langEl.textContent=(lang||'AUTO').toUpperCase();refresh();show('Teks diterima. Periksa durasi dan timestamp akhir di bawah.');return;
-    }catch(e){last=e.name==='AbortError'?'Waktu pengambilan habis.':'Tidak dapat mengakses sumber transkrip. Koneksi atau izin akses sumber mungkin membatasi.'}
-    finally{clearTimeout(timer);controller.signal.removeEventListener('abort',abort)}
-  }
-  show(controller.signal.aborted?'Pengambilan dibatalkan.':last+' Coba lagi atau impor file TXT/SRT/VTT.',false);
-  }finally{getBtn.disabled=false;$('#import').disabled=false;$('#cancel').classList.add('hidden');activeController=null}
-}
-async function copy(text){if(!text.trim()){show('Belum ada teks untuk disalin.',false);return false}try{await navigator.clipboard.writeText(text);return true}catch{show('Salin otomatis tidak tersedia. Tekan lama teks atau gunakan Unduh File.',false);return false}}
-function download(text,name){const u=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000)}
-function analysisText(){return `${prompts[mode]}\nBaca seluruh file hingga selesai. Jangan mengarang bagian yang hilang. Sebutkan jika transkrip tampak terpotong.\n\nSumber video: ${sourceUrl||'File impor / teks manual'}\nDurasi yang dimasukkan: ${$('#duration').value||'Tidak diketahui'}\nPemeriksaan: ${$('#coverage').textContent}\n\nTRANSCRIPT:\n${transcriptEl.value}`}
-getBtn.addEventListener('click',loadTranscript);
-$('#new').addEventListener('click',async()=>{
-  $('#new').disabled=true;activeController?.abort();clearTimeout(savedTimer);
-  try{await saveLast()}catch{show('Hasil belum tersimpan. Unduh transkrip sebelum memulai yang baru.',false);$('#new').disabled=false;return}
-  urlEl.value='';sourceUrl='';transcriptEl.value='';$('#duration').value='';$('#import').value='';langEl.textContent='AUTO';
-  refresh();show('Siap untuk video berikutnya. Masukkan link YouTube baru.');urlEl.focus();window.scrollTo({top:0,behavior:'smooth'});$('#new').disabled=false;
-});
-$('#cancel').addEventListener('click',()=>activeController?.abort());
-$('#copy').addEventListener('click',async()=>{if(await copy(transcriptEl.value))show('Transkrip disalin.')});
-$('#download').addEventListener('click',()=>{if(transcriptEl.value.trim())download(transcriptEl.value,'transkrip-utuh.txt');else show('Belum ada transkrip.',false)});
-$('#analysis-download').addEventListener('click',()=>{if(transcriptEl.value.trim())download(analysisText(),'analisis-transkrip.txt');else show('Belum ada transkrip.',false)});
-$('#restore').addEventListener('click',restoreLast);
-$('#duration').addEventListener('input',refresh);
-transcriptEl.addEventListener('input',refresh);
-$('#import').addEventListener('change',async e=>{
-  const f=e.target.files[0];if(!f)return;
-  if(f.size>20*1024*1024){show('File melebihi 20 MB. Pilih file teks yang lebih kecil.',false);e.target.value='';return}
-  try{const t=await f.text();if(!t.trim())throw Error('File kosong.');transcriptEl.value=t;sourceUrl='';urlEl.value='';$('#duration').value='';langEl.textContent='IMPOR';refresh();show('File dibuka. Isi durasi untuk memeriksa timestamp.')}catch(e){show(e.message||'File tidak bisa dibuka.',false)}finally{e.target.value=''}
-});
-document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));b.classList.add('active');mode=b.dataset.mode}));
-function handoffStatus(text,ok=true){const el=$('#handoff-status');el.textContent=text;el.className='status '+(ok?'ok':'err')}
-$('#analyze').addEventListener('click',async()=>{
-  if(!transcriptEl.value.trim()){handoffStatus('Ambil atau tempel transkrip terlebih dahulu.',false);return}
-  const text=analysisText(),button=$('#analyze');button.disabled=true;
-  let copied=false;
-  try{await navigator.clipboard.writeText(text);copied=true}catch{
-    const area=$('#manual-payload');area.value=text;$('#manual-copy').classList.remove('hidden');
-    area.focus();area.select();area.setSelectionRange(0,text.length);
-    try{copied=document.execCommand('copy')}catch{}
-  }
-  if(!copied){handoffStatus('Salin otomatis diblokir browser. Teks lengkap tersedia di bawah: pilih semua, salin, lalu buka ChatGPT.',false);button.disabled=false;return}
-  $('#manual-copy').classList.add('hidden');handoffStatus('Teks utuh disalin. Di ChatGPT: tekan lama kolom pesan → Tempel → Kirim.');
-  // Best effort: keep the result available when returning from ChatGPT.
-  saveLast().catch(()=>{});
-  button.disabled=false;
-  $('#app-retry').classList.remove('hidden');
-  // Attempt the installed app; never redirect to a browser sign-in page.
-  try{window.location.assign('chatgpt://')}catch{
-    handoffStatus('Teks sudah disalin. Buka aplikasi ChatGPT yang sudah login, lalu Tempel → Kirim.');
-  }
-});
-$('#copy-part').addEventListener('click',async()=>{
-  const i=Number($('#part').value);if(!parts[i]){show('Belum ada transkrip.',false);return}
-  const text=`${prompts[mode]}\n\nSumber: ${sourceUrl||'File impor / teks manual'}\nBAGIAN ${i+1}/${parts.length}. Simpan poin beserta timestamp dari bagian ini. Tunggu seluruh bagian dan perintah kesimpulan sebelum analisis menyeluruh.\n\n${parts[i]}`;
-  if(await copy(text)){completed.add(i);updatePartStatus();show(`Bagian ${i+1}/${parts.length} disalin. Tempel ke ChatGPT.`);if(i+1<parts.length)$('#part').value=String(i+1)}
-});
-$('#synthesis').addEventListener('click',async()=>{if(!parts.length){show('Belum ada transkrip.',false);return}if(await copy(`Sekarang periksa apakah seluruh ${parts.length} bagian transkrip sudah diterima. Jika ada yang hilang, sebutkan nomor bagian yang kurang. Jika lengkap: ${prompts[mode]} Gabungkan temuan semua bagian, pertahankan timestamp, bedakan klaim pembicara dan fakta terverifikasi, dan jangan mengarang informasi.`))show('Perintah kesimpulan disalin. Tempel setelah seluruh bagian terkirim.')});
-result.classList.remove('hidden');analysis.classList.remove('hidden');
-const incoming=new URLSearchParams(location.search).get('url');if(incoming)urlEl.value=incoming;
-refresh();
+function analysisHeader(){return `${prompts[mode]}\nBaca seluruh transkrip hingga selesai. Jangan mengarang bagian yang hilang. Sebutkan jika transkrip tampak terpotong.\n\nSumber video: ${sourceUrl||'File impor / teks manual'}\nDurasi yang dimasukkan: ${$('#duration').value||'Tidak diketahui'}\nPemeriksaan: ${$('#coverage').textContent}`}
+function fullAnalysis(){return `${analysisHeader()}\n\nTRANSCRIPT:\n${transcriptEl.value}`}
+async function copyText(text){try{await navigator.clipboard.writeText(text);return true}catch{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();let ok=false;try{ok=document.execCommand('copy')}catch{}ta.remove();return ok}}
+function refresh(){const t=transcriptEl.value;parts=splitText(t);$('#stats').textContent=`${t.trim()?t.trim().split(/\s+/u).length.toLocaleString('id-ID'):0} kata · ${t.length.toLocaleString('id-ID')} karakter · ${parts.length} bagian`;const last=lastTimestamp(t),dur=sec($('#duration').value.trim()),c=$('#coverage');c.className='status ok';if($('#duration').value.trim()&&dur===null){c.textContent='Format durasi belum benar. Gunakan 2:12:08 atau 132:08.';c.className='status err'}else if(last===null)c.textContent='Tidak ada timestamp yang terbaca. Kelengkapan belum dapat diperiksa.';else if(dur&&last<dur-90){c.textContent=`Periksa kelengkapan: timestamp terakhir ${clock(last)}, durasi ${clock(dur)}. Mungkin ada bagian yang tidak terambil.`;c.className='status err'}else c.textContent=`Timestamp terakhir ${clock(last)}. ${dur?'Mendekati durasi yang dimasukkan.':'Isi durasi video bila ingin membandingkan.'}`;clearTimeout(saveTimer);if(t.trim())saveTimer=setTimeout(saveLast,350)}
+function db(){return new Promise((resolve,reject)=>{const r=indexedDB.open('transcript-ai-v3',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('results'))r.result.createObjectStore('results')};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+async function saveLast(){if(!transcriptEl.value.trim())return;try{const d=await db();await new Promise((resolve,reject)=>{const tx=d.transaction('results','readwrite');tx.objectStore('results').put({text:transcriptEl.value,url:sourceUrl,duration:$('#duration').value,lang:langEl.textContent,mode,nextPartIndex},'last');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});d.close()}catch{}}
+async function restoreLast(){try{const d=await db();const v=await new Promise((resolve,reject)=>{const r=d.transaction('results').objectStore('results').get('last');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});d.close();if(!v)return;transcriptEl.value=v.text||'';sourceUrl=v.url||'';urlEl.value=sourceUrl;$('#duration').value=v.duration||'';langEl.textContent=v.lang||'AUTO';mode=v.mode||'lengkap';nextPartIndex=Number(v.nextPartIndex)||0;if(transcriptEl.value.trim()){result.classList.remove('hidden');analysis.classList.remove('hidden');refresh();show('Hasil terakhir dipulihkan otomatis setelah refresh.')}}catch{}}
+async function loadTranscript(){const id=videoId(urlEl.value);if(!id){show('Link YouTube tidak valid.',false);return}const requested=`https://www.youtube.com/watch?v=${id}`;getBtn.disabled=true;$('#cancel').classList.remove('hidden');const controller=new AbortController();activeController=controller;let last='Transkrip tidak tersedia.';try{for(const lang of ['id','en','']){if(controller.signal.aborted)break;show(`Mengambil transkrip ${lang||'bahasa asli'}… video panjang bisa memerlukan waktu.`);const attempt=new AbortController();const stop=()=>attempt.abort();controller.signal.addEventListener('abort',stop,{once:true});const timer=setTimeout(()=>attempt.abort(),120000);try{const r=await fetch(`https://youtube-transcript.ai/transcript/${id}.txt${lang?'?lang='+lang:''}`,{signal:attempt.signal});if(!r.ok){last=`Sumber transkrip merespons HTTP ${r.status}.`;continue}const t=await r.text();if(!validResponse(t)){last='Sumber tidak mengembalikan transcript yang valid.';continue}transcriptEl.value=t;sourceUrl=requested;langEl.textContent=(lang||'AUTO').toUpperCase();result.classList.remove('hidden');analysis.classList.remove('hidden');nextPartIndex=0;refresh();await saveLast();show('Transcript berhasil. Hasil disimpan otomatis.');return}catch(e){last=e.name==='AbortError'?'Waktu pengambilan habis untuk percobaan ini.':'Tidak dapat mengakses sumber transkrip.'}finally{clearTimeout(timer);controller.signal.removeEventListener('abort',stop)}}show(controller.signal.aborted?'Pengambilan dibatalkan.':last+' Coba lagi atau impor TXT/SRT/VTT.',false)}finally{getBtn.disabled=false;$('#cancel').classList.add('hidden');activeController=null}}
+async function copyPart(i){if(!parts[i])return false;const text=`${analysisHeader()}\n\nBAGIAN ${i+1}/${parts.length}. Simpan poin dan timestamp dari bagian ini. Jangan buat analisis final sampai semua bagian diterima.\n\n${parts[i]}`;return copyText(text)}
+function updateLong(){const panel=$('#long-panel');panel.classList.remove('hidden');$('#long-title').textContent=`Transcript panjang · ${parts.length} bagian`;$('#part-status').textContent=nextPartIndex>=parts.length?`Semua ${parts.length} bagian sudah disiapkan. Sekarang salin Perintah Kesimpulan Akhir.`:`Bagian berikutnya: ${Math.min(nextPartIndex+1,parts.length)} dari ${parts.length}. Buka ChatGPT, tempel bagian yang sudah disalin, lalu kembali ke sini untuk bagian berikutnya.`;$('#next-part').disabled=nextPartIndex>=parts.length;$('#next-part').textContent=nextPartIndex>=parts.length?'Semua Bagian Sudah Disalin':`Salin Bagian ${nextPartIndex+1}/${parts.length}`}
+getBtn.addEventListener('click',loadTranscript);$('#cancel').addEventListener('click',()=>activeController?.abort());
+$('#new').addEventListener('click',async()=>{await saveLast();urlEl.value='';sourceUrl='';transcriptEl.value='';$('#duration').value='';langEl.textContent='AUTO';nextPartIndex=0;result.classList.add('hidden');analysis.classList.add('hidden');$('#long-panel').classList.add('hidden');show('Siap untuk video baru.');window.scrollTo({top:0,behavior:'smooth'})});
+$('#copy').addEventListener('click',async()=>show(await copyText(transcriptEl.value)?'Transcript disalin.':'Salin otomatis gagal.',await copyText('')!==false));
+$('#download').addEventListener('click',()=>{if(!transcriptEl.value.trim())return;const u=URL.createObjectURL(new Blob([transcriptEl.value],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download='transkrip-utuh.txt';a.click();setTimeout(()=>URL.revokeObjectURL(u),30000)});
+$('#duration').addEventListener('input',refresh);transcriptEl.addEventListener('input',refresh);
+$('#import').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const t=await f.text();if(!t.trim())throw Error('File kosong.');transcriptEl.value=t;sourceUrl='';urlEl.value='';langEl.textContent='IMPOR';result.classList.remove('hidden');analysis.classList.remove('hidden');nextPartIndex=0;refresh();await saveLast();show('File dibuka dan disimpan otomatis.')}catch(err){show(err.message||'File tidak bisa dibuka.',false)}finally{e.target.value=''}});
+document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));b.classList.add('active');mode=b.dataset.mode;nextPartIndex=0;saveLast()}));
+$('#prepare').addEventListener('click',async()=>{if(!transcriptEl.value.trim()){handoff('Belum ada transcript.',false);return}refresh();const full=fullAnalysis();if(full.length<=DIRECT_LIMIT){const ok=await copyText(full);handoff(ok?'Analisis lengkap sudah disalin. Sekarang tekan “Buka Aplikasi ChatGPT”, lalu Tempel → Kirim.':'Salin otomatis gagal. Coba Salin Transcript atau gunakan browser Safari.',ok);$('#long-panel').classList.add('hidden');return}nextPartIndex=0;const ok=await copyPart(0);if(ok){nextPartIndex=1;await saveLast();updateLong();handoff(`Transcript terlalu panjang untuk satu pesan. Bagian 1/${parts.length} sudah disalin. Tekan Buka ChatGPT → Tempel → Kirim, lalu kembali untuk bagian berikutnya.`)}else handoff('Salin otomatis gagal.',false)});
+$('#next-part').addEventListener('click',async()=>{if(nextPartIndex>=parts.length){updateLong();return}const i=nextPartIndex;if(await copyPart(i)){nextPartIndex=i+1;await saveLast();updateLong();handoff(`Bagian ${i+1}/${parts.length} disalin. Tempel ke percakapan ChatGPT yang sama.`)}else handoff('Salin otomatis gagal.',false)});
+$('#synthesis').addEventListener('click',async()=>{const text=`Sekarang periksa apakah seluruh ${parts.length} bagian transcript sudah diterima. Jika ada yang hilang, sebutkan nomor bagian yang kurang. Jika lengkap: ${prompts[mode]} Gabungkan temuan semua bagian, pertahankan timestamp, bedakan klaim pembicara dan fakta terverifikasi, dan jangan mengarang informasi.`;handoff(await copyText(text)?'Perintah kesimpulan akhir disalin. Tempel sebagai pesan terakhir di percakapan ChatGPT yang sama.':'Salin otomatis gagal.',true)});
+restoreLast();
 </script>
 </body>
 </html>
