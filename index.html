@@ -47,7 +47,7 @@
 <body>
 <main>
   <section class="hero">
-    <div class="tag">TRANSCRIPT AI · V2 VIDEO PANJANG</div>
+    <div class="tag">TRANSCRIPT AI · V2.1 · LANGSUNG KE CHATGPT</div>
     <h1>Transcript AI</h1>
     <p>Masukkan link YouTube, ambil transcript, lalu kirim ke ChatGPT untuk dianalisis.</p>
   </section>
@@ -90,8 +90,17 @@
       <button class="chip" data-mode="entitas">Orang & perusahaan</button>
       <button class="chip" data-mode="konten">Ide konten</button>
     </div>
-    <button id="analyze" class="primary">Bagikan File Analisis Utuh ↗</button>
-    <p class="hint">Pilih ChatGPT di menu Bagikan, atau unduh file lalu lampirkan di ChatGPT.</p>
+    <button id="analyze" class="primary">Salin &amp; Buka Aplikasi ChatGPT ↗</button>
+    <p class="hint">Teks dan perintah analisis disalin utuh. Gunakan akun yang sudah login di aplikasi ChatGPT, lalu Tempel → Kirim.</p>
+    <div id="handoff-status" class="status hidden" role="status" aria-live="polite"></div>
+    <p id="app-retry" class="hint hidden">Jika aplikasi belum terbuka, <a href="chatgpt://" style="color:#c5baff">ketuk untuk membuka ChatGPT</a>, atau pindah ke aplikasi ChatGPT yang sudah Mas pakai. Teks tetap tersalin.</p>
+    <div id="manual-copy" class="hidden">
+      <label for="manual-payload">Jika salin otomatis gagal: salin teks ini, lalu buka ChatGPT.</label>
+      <textarea id="manual-payload" readonly></textarea>
+      <a href="chatgpt://" style="display:block;color:#c5baff;padding:16px">Buka Aplikasi ChatGPT ↗</a>
+    </div>
+    <details style="margin-top:16px"><summary style="cursor:pointer;color:#bdb8ce">Pilihan lain / jika teks terlalu panjang</summary>
+    <p class="foot">Jika ChatGPT menolak panjang pesan, gunakan salin bertahap di bawah atau lampirkan file analisis.</p>
     <button id="analysis-download" class="secondary">Unduh File Analisis</button>
     <div id="parts" class="panel">
       <label for="part">Alternatif: salin bertahap untuk teks panjang</label>
@@ -100,6 +109,7 @@
       <p id="part-status" class="foot"></p>
       <button id="synthesis" class="secondary">Salin Perintah Kesimpulan Akhir</button>
     </div>
+    </details>
   </section>
 
   <div class="foot">Setelah online di Vercel, situs ini bisa ditambahkan ke Home Screen iPhone dan dibuka full-screen seperti aplikasi.</div>
@@ -157,7 +167,7 @@ function splitText(text,max=MAX_PART){
   }return out;
 }
 function refresh(){
-  const t=transcriptEl.value;parts=splitText(t);completed.clear();
+  const t=transcriptEl.value;parts=splitText(t);completed.clear();$('#handoff-status').classList.add('hidden');$('#app-retry').classList.add('hidden');$('#manual-copy').classList.add('hidden');$('#manual-payload').value='';
   $('#stats').textContent=`${t.trim()?t.trim().split(/\s+/u).length.toLocaleString('id-ID'):0} kata · ${t.length.toLocaleString('id-ID')} karakter · ${parts.length} bagian`;
   const last=lastTimestamp(t),duration=seconds($('#duration').value.trim());
   const c=$('#coverage');c.className='status ok';
@@ -218,11 +228,26 @@ $('#import').addEventListener('change',async e=>{
   try{const t=await f.text();if(!t.trim())throw Error('File kosong.');transcriptEl.value=t;sourceUrl='';urlEl.value='';$('#duration').value='';langEl.textContent='IMPOR';refresh();show('File dibuka. Isi durasi untuk memeriksa timestamp.')}catch(e){show(e.message||'File tidak bisa dibuka.',false)}finally{e.target.value=''}
 });
 document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));b.classList.add('active');mode=b.dataset.mode}));
+function handoffStatus(text,ok=true){const el=$('#handoff-status');el.textContent=text;el.className='status '+(ok?'ok':'err')}
 $('#analyze').addEventListener('click',async()=>{
-  if(!transcriptEl.value.trim()){show('Belum ada transkrip.',false);return}
-  const text=analysisText(),file=new File([text],'analisis-transkrip.txt',{type:'text/plain'});
-  if(navigator.canShare?.({files:[file]})){try{await navigator.share({files:[file],title:'Analisis Transkrip Utuh'});show('File dibagikan.');return}catch(e){if(e.name==='AbortError')return}}
-  download(text,'analisis-transkrip.txt');show('File diunduh. Lampirkan file tersebut di ChatGPT, atau gunakan salin bertahap.');
+  if(!transcriptEl.value.trim()){handoffStatus('Ambil atau tempel transkrip terlebih dahulu.',false);return}
+  const text=analysisText(),button=$('#analyze');button.disabled=true;
+  let copied=false;
+  try{await navigator.clipboard.writeText(text);copied=true}catch{
+    const area=$('#manual-payload');area.value=text;$('#manual-copy').classList.remove('hidden');
+    area.focus();area.select();area.setSelectionRange(0,text.length);
+    try{copied=document.execCommand('copy')}catch{}
+  }
+  if(!copied){handoffStatus('Salin otomatis diblokir browser. Teks lengkap tersedia di bawah: pilih semua, salin, lalu buka ChatGPT.',false);button.disabled=false;return}
+  $('#manual-copy').classList.add('hidden');handoffStatus('Teks utuh disalin. Di ChatGPT: tekan lama kolom pesan → Tempel → Kirim.');
+  // Best effort: keep the result available when returning from ChatGPT.
+  saveLast().catch(()=>{});
+  button.disabled=false;
+  $('#app-retry').classList.remove('hidden');
+  // Attempt the installed app; never redirect to a browser sign-in page.
+  try{window.location.assign('chatgpt://')}catch{
+    handoffStatus('Teks sudah disalin. Buka aplikasi ChatGPT yang sudah login, lalu Tempel → Kirim.');
+  }
 });
 $('#copy-part').addEventListener('click',async()=>{
   const i=Number($('#part').value);if(!parts[i]){show('Belum ada transkrip.',false);return}
