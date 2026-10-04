@@ -45,12 +45,20 @@ const COMPLETE_PROMPT=`Analisa transcript ini secara menyeluruh dan baca sampai 
 
 function show(text,ok=true){msg.textContent=text;msg.className='status '+(ok?'ok':'err')}
 function videoId(v){v=v.trim();if(/^[A-Za-z0-9_-]{11}$/.test(v))return v;try{const u=new URL(v),h=u.hostname.replace(/^www\./,'');if(h==='youtu.be'){const id=u.pathname.split('/').filter(Boolean)[0];if(id&&/^[A-Za-z0-9_-]{11}$/.test(id))return id}if(h.endsWith('youtube.com')){const q=u.searchParams.get('v');if(q&&/^[A-Za-z0-9_-]{11}$/.test(q))return q;const p=u.pathname.split('/').filter(Boolean);if(['shorts','live','embed'].includes(p[0])&&p[1]&&/^[A-Za-z0-9_-]{11}$/.test(p[1]))return p[1]}}catch{}const m=v.match(/(?:v=|youtu\.be\/|shorts\/|live\/|embed\/)([A-Za-z0-9_-]{11})/);return m?.[1]||null}
-function valid(t){return t.trim().length>20&&!/^\s*(?:<!doctype|<html|\{\s*"(?:error|detail)"|(?:error|not found|unavailable|access denied|rate limit)\b)/i.test(t)}
+function valid(t){return t.trim().length>20&&!/^\s*(?:<!doctype|<html|\{\s*"(?:error|detail)"|(?:error|not found|unavailable|access denied|rate limit)\b)/i.test(t)&&!(t.trim().length<1500&&/(high volume|rate limit|too many requests|higher rate limits|api key)/i.test(t))}
 
 async function loadTranscript(){
  const id=videoId(urlEl.value);if(!id){show('Link YouTube tidak valid.',false);return}
  getBtn.disabled=true;getBtn.textContent='Mengambil transcript…';show('Sedang mengambil transcript…');
  let last='Transcript tidak tersedia.';
+ try{
+   const r=await fetch(`/api/transcript?url=${encodeURIComponent(urlEl.value.trim())}`);
+   const d=await r.json();
+   if(r.ok&&d.text&&valid(d.text)){
+     transcriptEl.value=d.text.trim();langEl.textContent=String(d.language||'auto').toUpperCase();result.classList.remove('hidden');show('Transcript berhasil diambil.');getBtn.disabled=false;getBtn.textContent='Ambil Transcript';result.scrollIntoView({behavior:'smooth',block:'start'});return
+   }
+   if(d.error)last=d.error;
+ }catch(e){}
  for(const lang of ['id','en','']){
    try{
      const q=lang?`?lang=${encodeURIComponent(lang)}`:'';

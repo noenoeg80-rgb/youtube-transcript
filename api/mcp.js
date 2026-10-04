@@ -1,68 +1,9 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { z } from 'zod';
+import { getTranscript } from './_transcript.js';
 
 export const config = { maxDuration: 60 };
-
-function youtubeId(value) {
-  const v = String(value || '').trim();
-  if (/^[\w-]{11}$/.test(v)) return v;
-  try {
-    const u = new URL(v);
-    const h = u.hostname.toLowerCase();
-    let id = null;
-    if (h === 'youtu.be') id = u.pathname.split('/').filter(Boolean)[0];
-    if (h === 'youtube.com' || h.endsWith('.youtube.com')) {
-      id = u.searchParams.get('v');
-      const p = u.pathname.split('/').filter(Boolean);
-      if (!id && ['shorts', 'live', 'embed'].includes(p[0])) id = p[1];
-    }
-    return /^[\w-]{11}$/.test(id || '') ? id : null;
-  } catch {
-    return null;
-  }
-}
-
-function validTranscript(text) {
-  return String(text || '').trim().length > 20 &&
-    !/^\s*(?:<!doctype|<html|\{\s*"(?:error|detail)"|(?:error|not found|unavailable|access denied|rate limit)\b)/i.test(text);
-}
-
-async function loadTranscript(id, requestedLanguage = 'auto') {
-  const langs = requestedLanguage && requestedLanguage !== 'auto'
-    ? [requestedLanguage]
-    : ['id', 'en', ''];
-
-  let lastError = 'Transcript tidak tersedia.';
-  for (const lang of langs) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 45000);
-    try {
-      const suffix = lang ? `?lang=${encodeURIComponent(lang)}` : '';
-      const r = await fetch(`https://youtube-transcript.ai/transcript/${id}.txt${suffix}`, {
-        signal: controller.signal,
-        headers: { 'user-agent': 'TranscriptAI-MCP/1.0' },
-      });
-      if (!r.ok) {
-        lastError = `Sumber transcript merespons HTTP ${r.status}.`;
-        continue;
-      }
-      const text = await r.text();
-      if (!validTranscript(text)) {
-        lastError = 'Sumber tidak mengembalikan transcript yang valid.';
-        continue;
-      }
-      return { text, language: lang || 'auto' };
-    } catch (e) {
-      lastError = e?.name === 'AbortError'
-        ? 'Pengambilan transcript melebihi batas waktu.'
-        : 'Tidak dapat mengakses sumber transcript.';
-    } finally {
-      clearTimeout(timer);
-    }
-  }
-  throw new Error(lastError);
-}
 
 function createServer() {
   const server = new McpServer({
@@ -76,7 +17,7 @@ function createServer() {
       title: 'Get YouTube transcript',
       description: 'Gunakan tool ini ketika pengguna memberikan link YouTube dan ingin isi video, ringkasan, analisis, poin penting, insight bisnis, entitas, atau ide konten. Ambil transcript melalui layanan Transcript AI milik pengguna. Untuk transcript panjang, panggil lagi dengan next_offset sampai has_more=false sebelum membuat analisis menyeluruh.',
       inputSchema: {
-        url: z.string().min(1).describe('Link YouTube atau video ID 11 karakter.'),
+        url: z.string().min(1).describe('Link YouTube atau video ID 11 karakter. Dengan SUPADATA_API_KEY, link TikTok, Instagram, Facebook, dan X juga didukung.'),
         language: z.string().optional().describe('Kode bahasa seperti id atau en. Kosong/auto akan mencoba id, en, lalu bahasa asli.'),
         offset: z.number().int().min(0).optional().describe('Posisi karakter mulai. Gunakan next_offset dari hasil sebelumnya untuk transcript panjang.'),
         max_chars: z.number().int().min(4000).max(30000).optional().describe('Jumlah maksimum karakter per panggilan. Default 24000.'),
@@ -88,23 +29,16 @@ function createServer() {
       },
     },
     async ({ url, language = 'auto', offset = 0, max_chars = 24000 }) => {
-      const id = youtubeId(url);
-      if (!id) {
-        return {
-          isError: true,
-          content: [{ type: 'text', text: 'Link YouTube tidak valid.' }],
-        };
-      }
-
       try {
-        const { text, language: usedLanguage } = await loadTranscript(id, language);
+        const { text, language: usedLanguage, source, video_id: id, source_url } = await getTranscript(url, language, 45000);
         const start = Math.min(offset, text.length);
         const end = Math.min(start + max_chars, text.length);
         const chunk = text.slice(start, end);
         const hasMore = end < text.length;
         const meta = {
           video_id: id,
-          source_url: `https://www.youtube.com/watch?v=${id}`,
+          source_url,
+          source,
           language: usedLanguage,
           total_chars: text.length,
           offset: start,
