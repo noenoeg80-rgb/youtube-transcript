@@ -21,6 +21,7 @@ function createServer() {
         language: z.string().optional().describe('Kode bahasa seperti id atau en. Kosong/auto akan mencoba id, en, lalu bahasa asli.'),
         offset: z.number().int().min(0).optional().describe('Posisi karakter mulai. Gunakan next_offset dari hasil sebelumnya untuk transcript panjang.'),
         max_chars: z.number().int().min(4000).max(30000).optional().describe('Jumlah maksimum karakter per panggilan. Default 24000.'),
+        timestamps: z.boolean().optional().describe('true = transcript per blok ~30 detik dengan penanda [mm:ss], untuk dicocokkan dengan screenshot/catatan visual. Butuh SUPADATA_API_KEY; jika tidak tersedia, hasil tanpa timestamp.'),
       },
       annotations: {
         readOnlyHint: true,
@@ -28,9 +29,12 @@ function createServer() {
         destructiveHint: false,
       },
     },
-    async ({ url, language = 'auto', offset = 0, max_chars = 24000 }) => {
+    async ({ url, language = 'auto', offset = 0, max_chars = 24000, timestamps = false }) => {
       try {
-        const { text, language: usedLanguage, source, video_id: id, source_url } = await getTranscript(url, language, 45000);
+        const r = await getTranscript(url, language, 45000, { timestamps });
+        const { language: usedLanguage, source, video_id: id, source_url } = r;
+        const timed = Boolean(timestamps && r.timed_text);
+        const text = timed ? r.timed_text : r.text;
         const start = Math.min(offset, text.length);
         const end = Math.min(start + max_chars, text.length);
         const chunk = text.slice(start, end);
@@ -45,6 +49,9 @@ function createServer() {
           returned_chars: chunk.length,
           next_offset: hasMore ? end : null,
           has_more: hasMore,
+          timestamps: timed,
+          ...(timed && id ? { jump_url_template: `https://www.youtube.com/watch?v=${id}&t={seconds}s` } : {}),
+          ...(r.timestamps_note ? { timestamps_note: r.timestamps_note } : {}),
         };
 
         return {
