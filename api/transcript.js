@@ -2,7 +2,7 @@ import { getTranscript } from './_transcript.js';
 
 export const config = { maxDuration: 60 };
 
-// GET /api/transcript?url=<link atau video ID>&lang=id|en|auto
+// GET /api/transcript?url=<link atau video ID>&lang=id|en|auto&timestamps=1
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('content-type', 'application/json; charset=utf-8');
@@ -14,8 +14,9 @@ export default async function handler(req, res) {
   const url = new URL(req.url, 'http://localhost');
   const input = url.searchParams.get('url') || url.searchParams.get('id') || '';
   const lang = url.searchParams.get('lang') || 'auto';
+  const timestamps = ['1', 'true', 'yes'].includes(String(url.searchParams.get('timestamps') || '').toLowerCase());
   try {
-    const result = await getTranscript(input, lang);
+    const result = await getTranscript(input, lang, 50000, { timestamps });
     res.statusCode = 200;
     res.end(JSON.stringify(result));
   } catch (e) {
