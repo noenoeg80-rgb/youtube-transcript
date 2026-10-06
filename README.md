@@ -7,7 +7,8 @@ Tempel link YouTube → ambil transcript → bagikan ke ChatGPT. Juga tersedia s
 - **Transcript** dari Supadata (`SUPADATA_API_KEY`) dengan fallback sumber gratis; opsi timestamp `[mm:ss]`.
 - **Momen penting** (`api/_moments.js`): detik-detik yang ditandai kata penekanan, kesimpulan, strategi, angka/uang, dan urutan. Ikut di hasil `/api/transcript` (`moments`), di tool MCP (`important_moments`), dan di teks yang dibagikan ke ChatGPT. Butuh segmen ber-timestamp, jadi hanya aktif lewat Supadata.
 - **Simpan ke Google Drive**: setiap transcript disimpan sebagai Google Doc di folder **materi apgred** (dibuat otomatis bila belum ada), lengkap dengan metadata, daftar momen penting, dan baris `Status referensi: BELUM DITINJAU` yang nanti diganti Claude/GPT menjadi DIPAKAI atau TIDAK DIPAKAI.
-- **Screenshot otomatis** (desktop Chrome/Edge): aplikasi memutar video tanpa suara ke tiap momen penting, mengambil gambarnya lewat izin berbagi tab, lalu menyimpannya ke folder yang sama. Di HP momen tetap tersimpan sebagai link lompat.
+- **Screenshot cepat (bawaan)**: begitu transcript selesai, aplikasi mengambil gambar pratinjau YouTube (storyboard, `api/frames.js`) untuk tiap momen penting. Tanpa izin apa pun, jalan juga di HP; gambarnya kecil (sekitar 160×90) dan bisa buram.
+- **Gambar jelas (opsional, desktop Chrome/Edge)**: tombol “Gambar jelas” memutar video tanpa suara ke tiap momen dan mengambil gambarnya lewat izin berbagi tab. Kedua jenis screenshot disimpan ke folder yang sama dengan nama `Screenshot cepat …` / `Screenshot jelas …`.
 
 ## Privasi
 

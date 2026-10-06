@@ -36,7 +36,7 @@
 <div id="moments" class="mom hidden">
 <h3>Momen penting</h3>
 <ol id="momentList"></ol>
-<button id="shotBtn" class="secondary hidden" type="button">📸 Screenshot otomatis momen penting</button>
+<button id="shotBtn" class="secondary hidden" type="button">🔍 Gambar jelas (bagikan tab)</button>
 <p id="shotHint" class="hint hidden"></p>
 <div id="player" class="hidden"><div id="yt"></div></div>
 <div id="shots" class="shots"></div>
@@ -62,9 +62,9 @@ function valid(t){return t.trim().length>20&&!/^\s*(?:<!doctype|<html|\{\s*"(?:e
 let last=null;
 function resetBtn(){getBtn.disabled=false;getBtn.textContent='Ambil Transcript'}
 function showResult(d,text,note){
- last={...d,text,url:urlEl.value.trim()};
+ last={...d,text,url:urlEl.value.trim(),shots:[]};
  transcriptEl.value=text;langEl.textContent=String(d.language||'auto').toUpperCase();result.classList.remove('hidden');show(note);resetBtn();
- renderMoments();result.scrollIntoView({behavior:'smooth',block:'start'});autoSave();
+ renderMoments();result.scrollIntoView({behavior:'smooth',block:'start'});autoSave();quickShots();
 }
 
 async function loadTranscript(){
@@ -204,15 +204,20 @@ async function saveTranscript(interactive){
  }finally{saveBtn.disabled=false;updateDriveUi()}
 }
 function autoSave(){if(autoEl.checked&&cfg.googleClientId)saveTranscript(false);else updateDriveUi()}
-async function saveShots(){
- const key=last.video_id||last.url,done=(saved[key]||={}).shots||=new Set();
+// Diserialkan agar screenshot cepat, jelas, dan simpan transkrip tidak meng-upload file yang sama dua kali.
+let shotQueue=Promise.resolve();
+function saveShots(job=last){const p=shotQueue.then(()=>uploadShots(job));shotQueue=p.catch(()=>{});return p}
+async function uploadShots(job){
+ const key=job.video_id||job.url,done=(saved[key]||={}).shots||=new Set();
  const parent=await ensureFolder();
- for(const s of last.shots){
-   if(done.has(s.m.start))continue;
-   await upload({name:`Screenshot · ${(last.title||last.video_id).slice(0,100)} · ${clock(s.m.start).replace(/:/g,'.')}.jpg`,parents:[parent],description:`[${clock(s.m.start)}] ${s.m.label}\n${jump(s.m.start)}`,appProperties:{app:'transcript-ai',kind:'screenshot',videoId:last.video_id||'',second:String(s.m.start)}},s.blob);
-   done.add(s.m.start);
+ let n=0;
+ for(const s of job.shots){
+   const k=`${s.mode}:${s.m.start}`;
+   if(done.has(k))continue;
+   await upload({name:`Screenshot ${s.mode} · ${(job.title||job.video_id).slice(0,100)} · ${clock(s.m.start).replace(/:/g,'.')}.jpg`,parents:[parent],description:`[${clock(s.m.start)}] ${s.m.label}\n${jump(s.m.start)}`,appProperties:{app:'transcript-ai',kind:'screenshot',mode:s.mode,videoId:job.video_id||'',second:String(s.m.start)}},s.blob);
+   done.add(k);n++;
  }
- show(`Transkrip dan ${last.shots.length} screenshot tersimpan di Google Drive › ${folderName()}.`);
+ if(n&&last===job)show(`Transkrip dan ${done.size} screenshot tersimpan di Google Drive › ${folderName()}.`);
 }
 connectBtn.addEventListener('click',async()=>{try{await requestToken();if(last&&autoEl.checked)await saveTranscript(false)}catch(e){show(e.message,false)}});
 saveBtn.addEventListener('click',()=>saveTranscript(true));
@@ -220,6 +225,7 @@ initDrive();
 
 // ---------- Momen penting + screenshot otomatis ----------
 const canCapture=Boolean(navigator.mediaDevices?.getDisplayMedia);
+const JELAS_LABEL='🔍 Gambar jelas (bagikan tab)';
 function renderMoments(){
  const box=$('#moments'),list=$('#momentList');list.textContent='';$('#shots').textContent='';
  const ms=last?.moments||[];
@@ -233,7 +239,7 @@ function renderMoments(){
  const hint=$('#shotHint');
  $('#shotBtn').classList.toggle('hidden',!ms.length||!last.video_id||!canCapture);
  hint.classList.toggle('hidden',!ms.length);
- hint.textContent=!last?.video_id?'':canCapture?'Saat diminta izin berbagi layar, pilih “tab ini”. Video diputar tanpa suara ke tiap momen lalu diambil gambarnya.':'Screenshot otomatis butuh browser desktop (Chrome/Edge). Di HP, momen penting tetap tersimpan sebagai link lompat.';
+ hint.textContent=!last?.video_id?'':`Screenshot cepat diambil otomatis dari gambar pratinjau YouTube (kecil, bisa buram).${canCapture?' Butuh gambar tajam untuk slide/tulisan? Tekan “Gambar jelas”, lalu pilih “tab ini” saat diminta berbagi layar.':' Gambar jelas hanya tersedia di browser desktop (Chrome/Edge).'}`;
 }
 let ytLoading;
 function loadYT(){return ytLoading||=new Promise(ok=>{if(window.YT?.Player)return ok();window.onYouTubeIframeAPIReady=ok;loadScript('https://www.youtube.com/iframe_api')})}
@@ -245,9 +251,36 @@ function grab(video,el){
  c.getContext('2d').drawImage(video,sx,sy,sw,sh,0,0,c.width,c.height);
  return new Promise(ok=>c.toBlob(ok,'image/jpeg',.85));
 }
-function renderShot(m,blob){
+// Screenshot cepat (bawaan): gambar pratinjau YouTube (storyboard), tanpa bagikan tab, jalan juga di HP.
+function loadImg(src){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>no(new Error('gambar pratinjau gagal dimuat'));i.src=src})}
+function cropBlob(img,f){
+ const c=document.createElement('canvas');c.width=f.w;c.height=f.h;
+ c.getContext('2d').drawImage(img,f.x,f.y,f.w,f.h,0,0,f.w,f.h);
+ return new Promise(ok=>c.toBlob(ok,'image/jpeg',.9));
+}
+async function quickShots(){
+ const job=last;
+ if(!job?.video_id||!job.moments?.length)return;
+ const hint=$('#shotHint');
+ try{
+   const r=await fetch(`/api/frames?v=${job.video_id}&t=${job.moments.map(m=>m.start).join(',')}`);
+   const d=await r.json();
+   if(!r.ok)throw new Error(d.error||`HTTP ${r.status}`);
+   const sprites={};
+   for(const [i,f] of d.frames.entries()){
+     const img=await (sprites[f.src]||=loadImg(f.src));
+     const blob=await cropBlob(img,f);
+     if(last!==job)return;
+     if(blob){job.shots.push({m:job.moments[i],blob,mode:'cepat'});renderShot(job.moments[i],blob,'cepat')}
+   }
+   if(hasToken()&&saved[job.video_id]?.doc)await saveShots(job);
+ }catch(e){
+   if(last===job)hint.textContent=`Screenshot cepat tidak tersedia (${e.message}).${canCapture?' Pakai “Gambar jelas” di bawah.':''}`;
+ }
+}
+function renderShot(m,blob,mode){
  const fig=document.createElement('figure'),img=document.createElement('img'),cap=document.createElement('figcaption');
- img.src=URL.createObjectURL(blob);img.alt=`Screenshot ${clock(m.start)}`;cap.textContent=`[${clock(m.start)}] ${m.tags.join(' · ')}`;
+ img.src=URL.createObjectURL(blob);img.alt=`Screenshot ${clock(m.start)}`;cap.textContent=`[${clock(m.start)}] ${mode} · ${m.tags.join(' · ')}`;
  fig.append(img,cap);$('#shots').append(fig);
 }
 $('#shotBtn').addEventListener('click',async()=>{
@@ -260,29 +293,31 @@ $('#shotBtn').addEventListener('click',async()=>{
  }catch{show('Izin berbagi layar dibatalkan.',false);btn.disabled=false;return}
  try{
    show('Mengambil screenshot momen penting…');
-   await loadYT();box.classList.remove('hidden');$('#shots').textContent='';
+   await loadYT();box.classList.remove('hidden');
    player=await new Promise(ok=>{const p=new YT.Player('yt',{videoId:last.video_id,playerVars:{rel:0,playsinline:1,controls:0},events:{onReady:()=>ok(p)}})});
    player.mute();box.scrollIntoView({block:'center'});await sleep(600);
    const [track]=stream.getVideoTracks();let cropped=false;
    if(window.CropTarget&&track.cropTo){try{await track.cropTo(await CropTarget.fromElement(box));cropped=true}catch{}}
    const video=document.createElement('video');video.srcObject=stream;video.muted=true;await video.play();
-   last.shots=[];
-   for(const [i,m] of last.moments.entries()){
+   const job=last,clear=[];
+   for(const [i,m] of job.moments.entries()){
      btn.textContent=`📸 ${i+1}/${last.moments.length}…`;
      box.scrollIntoView({block:'center'});
      player.seekTo(m.start,true);player.playVideo();
      await until(()=>player.getPlayerState()===1,8000);await sleep(1500);
      // Ambil saat video masih berputar: saat dijeda YouTube menampilkan overlay di atas gambar.
      const blob=await grab(video,cropped?null:box);player.pauseVideo();
-     if(blob){last.shots.push({m,blob});renderShot(m,blob)}
+     if(blob)clear.push({m,blob,mode:'jelas'});
    }
-   if(hasToken()&&saved[last.video_id||last.url]?.doc)await saveShots();
+   // Gambar jelas menggantikan tampilan gambar cepat; yang cepat tetap tersimpan di Drive.
+   job.shots.push(...clear);$('#shots').textContent='';clear.forEach(s=>renderShot(s.m,s.blob,'jelas'));
+   if(hasToken()&&saved[job.video_id||job.url]?.doc)await saveShots(job);
    else if(hasToken()&&autoEl.checked)await saveTranscript(false);
-   else show(`${last.shots.length} screenshot siap.${cfg.googleClientId?' Simpan ke Drive untuk menyertakannya.':''}`);
+   else show(`${clear.length} gambar jelas siap.${cfg.googleClientId?' Simpan ke Drive untuk menyertakannya.':''}`);
  }catch(e){show(`Screenshot gagal: ${e.message==='need-auth'?'sesi Google Drive habis':e.message}`,false)}
  finally{
    stream?.getTracks().forEach(t=>t.stop());try{player?.destroy()}catch{}
-   box.classList.add('hidden');box.innerHTML='<div id="yt"></div>';btn.disabled=false;btn.textContent='📸 Screenshot otomatis momen penting';
+   box.classList.add('hidden');box.innerHTML='<div id="yt"></div>';btn.disabled=false;btn.textContent=JELAS_LABEL;
  }
 });
 getBtn.addEventListener('click',loadTranscript);
