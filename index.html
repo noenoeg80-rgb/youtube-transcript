@@ -269,13 +269,15 @@ $('#shotBtn').addEventListener('click',async()=>{
    last.shots=[];
    for(const [i,m] of last.moments.entries()){
      btn.textContent=`📸 ${i+1}/${last.moments.length}…`;
+     box.scrollIntoView({block:'center'});
      player.seekTo(m.start,true);player.playVideo();
-     await until(()=>player.getPlayerState()===1,8000);await sleep(1200);player.pauseVideo();
-     box.scrollIntoView({block:'center'});await sleep(500);
-     const blob=await grab(video,cropped?null:box);
+     await until(()=>player.getPlayerState()===1,8000);await sleep(1500);
+     // Ambil saat video masih berputar: saat dijeda YouTube menampilkan overlay di atas gambar.
+     const blob=await grab(video,cropped?null:box);player.pauseVideo();
      if(blob){last.shots.push({m,blob});renderShot(m,blob)}
    }
-   if(hasToken()&&(saved[last.video_id||last.url]?.doc||autoEl.checked))await saveShots();
+   if(hasToken()&&saved[last.video_id||last.url]?.doc)await saveShots();
+   else if(hasToken()&&autoEl.checked)await saveTranscript(false);
    else show(`${last.shots.length} screenshot siap.${cfg.googleClientId?' Simpan ke Drive untuk menyertakannya.':''}`);
  }catch(e){show(`Screenshot gagal: ${e.message==='need-auth'?'sesi Google Drive habis':e.message}`,false)}
  finally{
