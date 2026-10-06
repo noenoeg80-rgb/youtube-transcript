@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Transcript AI">
 <title>Transcript AI</title>
 <style>
-:root{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;color:#f7f7f8;background:#09090b}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 15% 0%,rgba(111,78,255,.20),transparent 28rem),radial-gradient(circle at 95% 18%,rgba(0,210,180,.08),transparent 22rem),#09090b}main{width:min(100%,720px);margin:auto;padding:calc(30px + env(safe-area-inset-top)) 16px calc(42px + env(safe-area-inset-bottom))}.hero{padding:22px 4px 18px}.tag{font-size:11px;letter-spacing:.14em;font-weight:800;color:#9894a3}.hero h1{font-size:clamp(44px,11vw,72px);line-height:.94;letter-spacing:-.055em;margin:10px 0 8px}.hero p{margin:0;color:#96929d;line-height:1.55}.panel{margin-top:14px;padding:16px;border:1px solid rgba(255,255,255,.08);border-radius:22px;background:rgba(23,23,29,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}label{display:block;font-size:13px;font-weight:750;color:#d2d0d7;margin-bottom:8px}input,textarea{width:100%;border:1px solid rgba(255,255,255,.09);background:#101014;color:#f4f4f6;border-radius:15px;padding:14px 15px;font-size:16px;outline:none}input:focus,textarea:focus{border-color:#765cff;box-shadow:0 0 0 4px rgba(118,92,255,.12)}textarea{height:340px;resize:vertical;line-height:1.55;font-size:14px}button{border:0;border-radius:15px;min-height:52px;font:inherit;font-weight:800;cursor:pointer}.primary{width:100%;margin-top:11px;padding:14px;color:#fff;background:linear-gradient(135deg,#795fff,#593bf1)}.secondary{width:100%;margin-top:10px;padding:13px;color:#eeeef2;background:#202027}.primary:disabled{opacity:.55}.hidden{display:none!important}.status{margin-top:11px;padding:11px 13px;border-radius:13px;font-size:13px;line-height:1.45}.ok{background:rgba(52,211,153,.10);color:#8ce8c5}.err{background:rgba(255,77,106,.11);color:#ffa0b0}.head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.eyebrow{font-size:11px;letter-spacing:.14em;font-weight:800;color:#9b98a6}.head h2{margin:4px 0 0;font-size:24px}.lang{font-size:11px;font-weight:800;padding:7px 10px;border-radius:999px;background:#202027;color:#bbb8c3}.hint{font-size:12px;color:#77747f;text-align:center;line-height:1.5;margin:9px 0 0}.ts{display:flex;align-items:center;gap:9px;margin:11px 2px 0;font-size:14px;font-weight:650;color:#d2d0d7}.ts input{width:20px;height:20px;padding:0;accent-color:#765cff}.foot{font-size:12px;color:#76727e;line-height:1.5;margin:14px 3px 0}@media(max-width:520px){.panel{padding:14px}textarea{height:310px}}
+:root{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;color:#f7f7f8;background:#09090b}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 15% 0%,rgba(111,78,255,.20),transparent 28rem),radial-gradient(circle at 95% 18%,rgba(0,210,180,.08),transparent 22rem),#09090b}main{width:min(100%,720px);margin:auto;padding:calc(30px + env(safe-area-inset-top)) 16px calc(42px + env(safe-area-inset-bottom))}.hero{padding:22px 4px 18px}.tag{font-size:11px;letter-spacing:.14em;font-weight:800;color:#9894a3}.hero h1{font-size:clamp(44px,11vw,72px);line-height:.94;letter-spacing:-.055em;margin:10px 0 8px}.hero p{margin:0;color:#96929d;line-height:1.55}.panel{margin-top:14px;padding:16px;border:1px solid rgba(255,255,255,.08);border-radius:22px;background:rgba(23,23,29,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}label{display:block;font-size:13px;font-weight:750;color:#d2d0d7;margin-bottom:8px}input,textarea{width:100%;border:1px solid rgba(255,255,255,.09);background:#101014;color:#f4f4f6;border-radius:15px;padding:14px 15px;font-size:16px;outline:none}input:focus,textarea:focus{border-color:#765cff;box-shadow:0 0 0 4px rgba(118,92,255,.12)}textarea{height:340px;resize:vertical;line-height:1.55;font-size:14px}button{border:0;border-radius:15px;min-height:52px;font:inherit;font-weight:800;cursor:pointer}.primary{width:100%;margin-top:11px;padding:14px;color:#fff;background:linear-gradient(135deg,#795fff,#593bf1)}.secondary{width:100%;margin-top:10px;padding:13px;color:#eeeef2;background:#202027}.primary:disabled{opacity:.55}.hidden{display:none!important}.status{margin-top:11px;padding:11px 13px;border-radius:13px;font-size:13px;line-height:1.45}.ok{background:rgba(52,211,153,.10);color:#8ce8c5}.err{background:rgba(255,77,106,.11);color:#ffa0b0}.head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.eyebrow{font-size:11px;letter-spacing:.14em;font-weight:800;color:#9b98a6}.head h2{margin:4px 0 0;font-size:24px}.lang{font-size:11px;font-weight:800;padding:7px 10px;border-radius:999px;background:#202027;color:#bbb8c3}.hint{font-size:12px;color:#77747f;text-align:center;line-height:1.5;margin:9px 0 0}.ts{display:flex;align-items:center;gap:9px;margin:11px 2px 0;font-size:14px;font-weight:650;color:#d2d0d7}.ts input{width:20px;height:20px;padding:0;accent-color:#765cff}.drive{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:11px 12px;border-radius:15px;background:#101014;border:1px solid rgba(255,255,255,.06)}.drive span{font-size:13px;color:#b9b6c2;line-height:1.4}.drive button{min-height:38px;padding:8px 12px;font-size:13px;color:#eeeef2;background:#2a2a33;white-space:nowrap}.mom{margin-top:14px}.mom h3{font-size:15px;margin:0 0 8px}.mom ol{margin:0;padding:0;list-style:none;display:grid;gap:8px}.mom li{padding:10px 12px;border-radius:13px;background:#101014;font-size:13px;line-height:1.45;color:#cfccd6}.mom a{color:#a996ff;font-weight:800;text-decoration:none;margin-right:6px}.mom .tags{display:block;font-size:11px;color:#77747f;margin-top:3px}#player{margin-top:12px;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#000}#player iframe{width:100%;height:100%;border:0}.shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}.shots figure{margin:0}.shots img{width:100%;border-radius:10px;display:block}.shots figcaption{font-size:11px;color:#8d8a96;margin-top:3px}.foot{font-size:12px;color:#76727e;line-height:1.5;margin:14px 3px 0}@media(max-width:520px){.panel{padding:14px}textarea{height:310px}}
 </style>
 </head>
 <body>
@@ -24,6 +24,8 @@
 <label for="url">Link YouTube</label>
 <input id="url" inputmode="url" autocapitalize="none" autocomplete="off" placeholder="https://youtu.be/...">
 <label class="ts" for="ts"><input id="ts" type="checkbox"> Dengan timestamp [mm:ss]</label>
+<label class="ts" for="autosave"><input id="autosave" type="checkbox" checked> Simpan otomatis ke Google Drive</label>
+<div id="drive" class="drive"><span id="driveText">Memeriksa Google Drive…</span><button id="connect" class="hidden" type="button">Hubungkan</button></div>
 <button id="get" class="primary">Ambil Transcript</button>
 <div id="msg" class="status hidden" role="status" aria-live="polite"></div>
 </section>
@@ -31,12 +33,21 @@
 <section id="result" class="panel hidden">
 <div class="head"><div><div class="eyebrow">HASIL</div><h2>Transcript</h2></div><span id="lang" class="lang">AUTO</span></div>
 <textarea id="transcript" spellcheck="false"></textarea>
+<div id="moments" class="mom hidden">
+<h3>Momen penting</h3>
+<ol id="momentList"></ol>
+<button id="shotBtn" class="secondary hidden" type="button">📸 Screenshot otomatis momen penting</button>
+<p id="shotHint" class="hint hidden"></p>
+<div id="player" class="hidden"><div id="yt"></div></div>
+<div id="shots" class="shots"></div>
+</div>
 <button id="share" class="primary">Bagikan ke ChatGPT</button>
+<button id="save" class="secondary hidden" type="button">Simpan ke Google Drive</button>
 <button id="new" class="secondary">↻ Transkrip Baru</button>
 <p class="hint">Saat menu Bagikan muncul, pilih ChatGPT. Tidak perlu memilih jenis analisis lagi.</p>
 </section>
 
-<p class="foot">Kalau ingin mulai ulang, cukup refresh aplikasi atau tekan “Transkrip Baru”.</p>
+<p class="foot">Kalau ingin mulai ulang, cukup refresh aplikasi atau tekan “Transkrip Baru”. Google Drive diakses langsung dari browsermu dengan izin terbatas (hanya file yang dibuat aplikasi ini); server tidak menyimpan transkrip, screenshot, atau token.</p>
 </main>
 <script>
 const $=s=>document.querySelector(s);
@@ -48,33 +59,40 @@ function show(text,ok=true){msg.textContent=text;msg.className='status '+(ok?'ok
 function videoId(v){v=v.trim();if(/^[A-Za-z0-9_-]{11}$/.test(v))return v;try{const u=new URL(v),h=u.hostname.replace(/^www\./,'');if(h==='youtu.be'){const id=u.pathname.split('/').filter(Boolean)[0];if(id&&/^[A-Za-z0-9_-]{11}$/.test(id))return id}if(h.endsWith('youtube.com')){const q=u.searchParams.get('v');if(q&&/^[A-Za-z0-9_-]{11}$/.test(q))return q;const p=u.pathname.split('/').filter(Boolean);if(['shorts','live','embed'].includes(p[0])&&p[1]&&/^[A-Za-z0-9_-]{11}$/.test(p[1]))return p[1]}}catch{}const m=v.match(/(?:v=|youtu\.be\/|shorts\/|live\/|embed\/)([A-Za-z0-9_-]{11})/);return m?.[1]||null}
 function valid(t){return t.trim().length>20&&!/^\s*(?:<!doctype|<html|\{\s*"(?:error|detail)"|(?:error|not found|unavailable|access denied|rate limit)\b)/i.test(t)&&!(t.trim().length<1500&&/(high volume|rate limit|too many requests|higher rate limits|api key)/i.test(t))}
 
+let last=null;
+function resetBtn(){getBtn.disabled=false;getBtn.textContent='Ambil Transcript'}
+function showResult(d,text,note){
+ last={...d,text,url:urlEl.value.trim()};
+ transcriptEl.value=text;langEl.textContent=String(d.language||'auto').toUpperCase();result.classList.remove('hidden');show(note);resetBtn();
+ renderMoments();result.scrollIntoView({behavior:'smooth',block:'start'});autoSave();
+}
+
 async function loadTranscript(){
  const id=videoId(urlEl.value);if(!id){show('Link YouTube tidak valid.',false);return}
  getBtn.disabled=true;getBtn.textContent='Mengambil transcript…';show('Sedang mengambil transcript…');
- let last='Transcript tidak tersedia.';
+ let lastErr='Transcript tidak tersedia.';
  try{
    const ts=$('#ts').checked?'&timestamps=1':'';
    const r=await fetch(`/api/transcript?url=${encodeURIComponent(urlEl.value.trim())}${ts}`);
    const d=await r.json();
    if(r.ok&&d.text&&valid(d.text)){
-     transcriptEl.value=(d.timed_text||d.text).trim();
-     langEl.textContent=String(d.language||'auto').toUpperCase();result.classList.remove('hidden');show(ts&&!d.timed_text?'Transcript diambil tanpa timestamp (sumber gratis).':'Transcript berhasil diambil.');getBtn.disabled=false;getBtn.textContent='Ambil Transcript';result.scrollIntoView({behavior:'smooth',block:'start'});return
+     showResult(d,(d.timed_text||d.text).trim(),ts&&!d.timed_text?'Transcript diambil tanpa timestamp (sumber gratis).':'Transcript berhasil diambil.');return
    }
-   if(d.error)last=d.error;
+   if(d.error)lastErr=d.error;
  }catch(e){}
  for(const lang of ['id','en','']){
    try{
      const q=lang?`?lang=${encodeURIComponent(lang)}`:'';
      const r=await fetch(`https://youtube-transcript.ai/transcript/${id}.txt${q}`);
-     if(!r.ok){last=`Gagal: HTTP ${r.status}`;continue}
+     if(!r.ok){lastErr=`Gagal: HTTP ${r.status}`;continue}
      const text=(await r.text()).trim();
      if(valid(text)){
-       transcriptEl.value=text;langEl.textContent=(lang||'AUTO').toUpperCase();result.classList.remove('hidden');show('Transcript berhasil diambil.');getBtn.disabled=false;getBtn.textContent='Ambil Transcript';result.scrollIntoView({behavior:'smooth',block:'start'});return
+       showResult({video_id:id,source_url:`https://www.youtube.com/watch?v=${id}`,language:lang||'auto',source:'gratis'},text,'Transcript berhasil diambil.');return
      }
-     last='Caption/transcript tidak tersedia.';
-   }catch(e){last=e?.message||'Gagal mengambil transcript.'}
+     lastErr='Caption/transcript tidak tersedia.';
+   }catch(e){lastErr=e?.message||'Gagal mengambil transcript.'}
  }
- show(last,false);getBtn.disabled=false;getBtn.textContent='Ambil Transcript';
+ show(lastErr,false);resetBtn();
 }
 
 async function fallbackCopy(payload){
@@ -83,14 +101,188 @@ async function fallbackCopy(payload){
 
 $('#share').addEventListener('click',async()=>{
  const text=transcriptEl.value.trim();if(!text)return;
- const payload=`${COMPLETE_PROMPT}\n\nSumber video:\n${urlEl.value.trim()}\n\nTRANSCRIPT:\n${text}`;
+ const moments=last?.moments?.length?`\n\nMOMEN PENTING (deteksi otomatis):\n${last.moments.map(m=>`[${clock(m.start)}] ${m.label} ${jump(m.start)}`).join('\n')}`:'';
+ const payload=`${COMPLETE_PROMPT}\n\nSumber video:\n${urlEl.value.trim()}${moments}\n\nTRANSCRIPT:\n${text}\n\nSetelah analisis, simpan hasilnya ke Google Drive folder “${folderName()}” bila kamu punya akses Drive.`;
  if(navigator.share){
    try{await navigator.share({title:'Analisa Transcript YouTube',text:payload});return}catch(e){if(e?.name==='AbortError')return}
  }
  await fallbackCopy(payload);
 });
 
-$('#new').addEventListener('click',()=>{urlEl.value='';transcriptEl.value='';result.classList.add('hidden');msg.className='status hidden';window.scrollTo({top:0,behavior:'smooth'});urlEl.focus()});
+$('#new').addEventListener('click',()=>{last=null;$('#moments').classList.add('hidden');$('#shots').textContent='';$('#save').classList.add('hidden');urlEl.value='';transcriptEl.value='';result.classList.add('hidden');msg.className='status hidden';window.scrollTo({top:0,behavior:'smooth'});urlEl.focus()});
+// ---------- Google Drive: simpan ke folder "materi apgred" ----------
+// Token OAuth hanya di browser (sessionStorage), scope drive.file: aplikasi hanya melihat file yang ia buat sendiri.
+const driveText=$('#driveText'),connectBtn=$('#connect'),saveBtn=$('#save'),autoEl=$('#autosave');
+let cfg={},token=null,tokenExp=0,tokenClient=null,folderId=null;
+const saved={};
+try{autoEl.checked=localStorage.getItem('autosave')!=='0'}catch{}
+autoEl.addEventListener('change',()=>{try{localStorage.setItem('autosave',autoEl.checked?'1':'0')}catch{}});
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function loadScript(src){return new Promise((ok,no)=>{const el=document.createElement('script');el.src=src;el.async=true;el.onload=ok;el.onerror=()=>no(new Error('Gagal memuat '+src));document.head.appendChild(el)})}
+function hasToken(){return Boolean(token&&tokenExp>Date.now()+60000)}
+function folderName(){return cfg.driveFolderName||'materi apgred'}
+function updateDriveUi(){
+ if(!cfg.googleClientId){driveText.textContent='Simpan ke Google Drive belum aktif di server (GOOGLE_CLIENT_ID belum diatur).';connectBtn.classList.add('hidden');saveBtn.classList.add('hidden');return}
+ driveText.textContent=hasToken()?`Terhubung · disimpan ke folder “${folderName()}”`:`Hubungkan Google Drive untuk menyimpan ke “${folderName()}”.`;
+ connectBtn.textContent=hasToken()?'Terhubung ✓':'Hubungkan';connectBtn.disabled=hasToken();connectBtn.classList.remove('hidden');
+ saveBtn.classList.toggle('hidden',!last||Boolean(saved[last.video_id||last.url]?.doc));
+}
+async function initDrive(){
+ try{cfg=await (await fetch('/api/config')).json()}catch{}
+ try{const t=JSON.parse(sessionStorage.getItem('gtok')||'null');if(t&&t.exp>Date.now()+60000){token=t.t;tokenExp=t.exp}}catch{}
+ try{folderId=localStorage.getItem('gfolder')}catch{}
+ updateDriveUi();
+ if(!cfg.googleClientId)return;
+ try{
+   await loadScript('https://accounts.google.com/gsi/client');
+   tokenClient=google.accounts.oauth2.initTokenClient({client_id:cfg.googleClientId,scope:'https://www.googleapis.com/auth/drive.file',callback:()=>{}});
+ }catch(e){driveText.textContent='Tidak bisa memuat login Google.'}
+}
+function requestToken(){
+ if(hasToken())return Promise.resolve(token);
+ if(!tokenClient)return Promise.reject(new Error('Login Google belum siap.'));
+ return new Promise((ok,no)=>{
+   tokenClient.callback=r=>{
+     if(r.error){no(new Error('Izin Google Drive ditolak.'));return}
+     token=r.access_token;tokenExp=Date.now()+(Number(r.expires_in)||3600)*1000;
+     try{sessionStorage.setItem('gtok',JSON.stringify({t:token,exp:tokenExp}))}catch{}
+     updateDriveUi();ok(token);
+   };
+   tokenClient.error_callback=()=>no(new Error('Jendela login Google tertutup atau diblokir.'));
+   tokenClient.requestAccessToken({prompt:''});
+ });
+}
+async function drive(path,opt={}){
+ if(!hasToken())throw new Error('need-auth');
+ const r=await fetch(`https://www.googleapis.com/${path}`,{...opt,headers:{Authorization:`Bearer ${token}`,...(opt.headers||{})}});
+ if(r.status===401){token=null;try{sessionStorage.removeItem('gtok')}catch{};updateDriveUi();throw new Error('need-auth')}
+ if(!r.ok)throw new Error(`Google Drive HTTP ${r.status}`);
+ return r.json();
+}
+async function ensureFolder(){
+ if(folderId){
+   try{const f=await drive(`drive/v3/files/${encodeURIComponent(folderId)}?fields=id,trashed`);if(!f.trashed)return folderId}catch(e){if(e.message==='need-auth')throw e}
+ }
+ const name=folderName();
+ const q=encodeURIComponent(`name='${name.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+ const found=await drive(`drive/v3/files?q=${q}&fields=files(id)&pageSize=1`);
+ folderId=found.files?.[0]?.id||(await drive('drive/v3/files?fields=id',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name,mimeType:'application/vnd.google-apps.folder',description:'Materi dari Transcript AI (dan ChatGPT/Claude). Dipakai sebagai referensi insight.'})})).id;
+ try{localStorage.setItem('gfolder',folderId)}catch{}
+ return folderId;
+}
+function upload(meta,blob){
+ const fd=new FormData();
+ fd.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));
+ fd.append('file',blob);
+ return drive('upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink',{method:'POST',body:fd});
+}
+function today(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function clock(sec){const t=Math.floor(sec),h=Math.floor(t/3600),m=Math.floor(t%3600/60),r=String(t%60).padStart(2,'0');return h?`${h}:${String(m).padStart(2,'0')}:${r}`:`${String(m).padStart(2,'0')}:${r}`}
+function jump(sec){return last?.video_id?`https://www.youtube.com/watch?v=${last.video_id}&t=${Math.floor(sec)}s`:''}
+function docName(){return `Transkrip · ${(last.title||last.video_id||'video').slice(0,120)} · ${today()}`}
+function buildDoc(){
+ const lines=[`TRANSKRIP: ${last.title||last.video_id||last.url}`,`Sumber: ${last.source_url||last.url}`,`Bahasa: ${String(last.language||'auto').toUpperCase()} · Sumber transkrip: ${last.source||'-'} · Disimpan: ${new Date().toLocaleString('id-ID')}`,'Status referensi: BELUM DITINJAU','(Claude/GPT: ganti jadi DIPAKAI atau TIDAK DIPAKAI beserta alasannya setelah meninjau.)',''];
+ if(last.moments?.length){lines.push('MOMEN PENTING');for(const m of last.moments)lines.push(`[${clock(m.start)}] ${m.label} (${m.tags.join(', ')}) ${jump(m.start)}`);lines.push('')}
+ lines.push('TRANSKRIP',last.text);
+ return lines.join('\n');
+}
+async function saveTranscript(interactive){
+ if(!last)return;
+ const key=last.video_id||last.url;
+ if(saved[key]?.doc)return;
+ try{
+   if(interactive)await requestToken();
+   if(!hasToken()){show('Transcript siap. Tekan “Simpan ke Google Drive” untuk menyimpan.');saveBtn.classList.remove('hidden');return}
+   saveBtn.disabled=true;
+   const parent=await ensureFolder();
+   const f=await upload({name:docName(),mimeType:'application/vnd.google-apps.document',parents:[parent],description:`Transcript AI · ${last.source_url||last.url}`,appProperties:{app:'transcript-ai',kind:'transcript',videoId:last.video_id||''}},new Blob([buildDoc()],{type:'text/plain;charset=utf-8'}));
+   saved[key]={...(saved[key]||{}),doc:f.id};
+   show(`Tersimpan di Google Drive › ${folderName()}.`);
+   if(last.shots?.length)await saveShots();
+ }catch(e){
+   show(e.message==='need-auth'?'Sesi Google Drive habis. Tekan “Simpan ke Google Drive”.':`Gagal menyimpan ke Drive: ${e.message}`,false);
+ }finally{saveBtn.disabled=false;updateDriveUi()}
+}
+function autoSave(){if(autoEl.checked&&cfg.googleClientId)saveTranscript(false);else updateDriveUi()}
+async function saveShots(){
+ const key=last.video_id||last.url,done=(saved[key]||={}).shots||=new Set();
+ const parent=await ensureFolder();
+ for(const s of last.shots){
+   if(done.has(s.m.start))continue;
+   await upload({name:`Screenshot · ${(last.title||last.video_id).slice(0,100)} · ${clock(s.m.start).replace(/:/g,'.')}.jpg`,parents:[parent],description:`[${clock(s.m.start)}] ${s.m.label}\n${jump(s.m.start)}`,appProperties:{app:'transcript-ai',kind:'screenshot',videoId:last.video_id||'',second:String(s.m.start)}},s.blob);
+   done.add(s.m.start);
+ }
+ show(`Transkrip dan ${last.shots.length} screenshot tersimpan di Google Drive › ${folderName()}.`);
+}
+connectBtn.addEventListener('click',async()=>{try{await requestToken();if(last&&autoEl.checked)await saveTranscript(false)}catch(e){show(e.message,false)}});
+saveBtn.addEventListener('click',()=>saveTranscript(true));
+initDrive();
+
+// ---------- Momen penting + screenshot otomatis ----------
+const canCapture=Boolean(navigator.mediaDevices?.getDisplayMedia);
+function renderMoments(){
+ const box=$('#moments'),list=$('#momentList');list.textContent='';$('#shots').textContent='';
+ const ms=last?.moments||[];
+ box.classList.toggle('hidden',!ms.length);
+ for(const m of ms){
+   const li=document.createElement('li'),a=document.createElement('a'),tags=document.createElement('span');
+   a.href=jump(m.start);a.target='_blank';a.rel='noopener';a.textContent=`[${clock(m.start)}]`;
+   tags.className='tags';tags.textContent=m.tags.join(' · ');
+   li.append(a,document.createTextNode(m.label),tags);list.append(li);
+ }
+ const hint=$('#shotHint');
+ $('#shotBtn').classList.toggle('hidden',!ms.length||!last.video_id||!canCapture);
+ hint.classList.toggle('hidden',!ms.length);
+ hint.textContent=!last?.video_id?'':canCapture?'Saat diminta izin berbagi layar, pilih “tab ini”. Video diputar tanpa suara ke tiap momen lalu diambil gambarnya.':'Screenshot otomatis butuh browser desktop (Chrome/Edge). Di HP, momen penting tetap tersimpan sebagai link lompat.';
+}
+let ytLoading;
+function loadYT(){return ytLoading||=new Promise(ok=>{if(window.YT?.Player)return ok();window.onYouTubeIframeAPIReady=ok;loadScript('https://www.youtube.com/iframe_api')})}
+async function until(fn,ms){const end=Date.now()+ms;while(Date.now()<end){if(fn())return true;await sleep(200)}return false}
+function grab(video,el){
+ const c=document.createElement('canvas');let sx=0,sy=0,sw=video.videoWidth,sh=video.videoHeight;
+ if(el){const r=el.getBoundingClientRect(),kx=video.videoWidth/innerWidth,ky=video.videoHeight/innerHeight;sx=r.left*kx;sy=r.top*ky;sw=r.width*kx;sh=r.height*ky}
+ c.width=Math.max(1,Math.round(sw));c.height=Math.max(1,Math.round(sh));
+ c.getContext('2d').drawImage(video,sx,sy,sw,sh,0,0,c.width,c.height);
+ return new Promise(ok=>c.toBlob(ok,'image/jpeg',.85));
+}
+function renderShot(m,blob){
+ const fig=document.createElement('figure'),img=document.createElement('img'),cap=document.createElement('figcaption');
+ img.src=URL.createObjectURL(blob);img.alt=`Screenshot ${clock(m.start)}`;cap.textContent=`[${clock(m.start)}] ${m.tags.join(' · ')}`;
+ fig.append(img,cap);$('#shots').append(fig);
+}
+$('#shotBtn').addEventListener('click',async()=>{
+ const btn=$('#shotBtn'),box=$('#player');
+ if(!last?.video_id||!last.moments?.length)return;
+ btn.disabled=true;
+ let stream,player;
+ try{
+   stream=await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:'browser',frameRate:10},audio:false,preferCurrentTab:true,selfBrowserSurface:'include'});
+ }catch{show('Izin berbagi layar dibatalkan.',false);btn.disabled=false;return}
+ try{
+   show('Mengambil screenshot momen penting…');
+   await loadYT();box.classList.remove('hidden');$('#shots').textContent='';
+   player=await new Promise(ok=>{const p=new YT.Player('yt',{videoId:last.video_id,playerVars:{rel:0,playsinline:1,controls:0},events:{onReady:()=>ok(p)}})});
+   player.mute();box.scrollIntoView({block:'center'});await sleep(600);
+   const [track]=stream.getVideoTracks();let cropped=false;
+   if(window.CropTarget&&track.cropTo){try{await track.cropTo(await CropTarget.fromElement(box));cropped=true}catch{}}
+   const video=document.createElement('video');video.srcObject=stream;video.muted=true;await video.play();
+   last.shots=[];
+   for(const [i,m] of last.moments.entries()){
+     btn.textContent=`📸 ${i+1}/${last.moments.length}…`;
+     player.seekTo(m.start,true);player.playVideo();
+     await until(()=>player.getPlayerState()===1,8000);await sleep(1200);player.pauseVideo();
+     box.scrollIntoView({block:'center'});await sleep(500);
+     const blob=await grab(video,cropped?null:box);
+     if(blob){last.shots.push({m,blob});renderShot(m,blob)}
+   }
+   if(hasToken()&&(saved[last.video_id||last.url]?.doc||autoEl.checked))await saveShots();
+   else show(`${last.shots.length} screenshot siap.${cfg.googleClientId?' Simpan ke Drive untuk menyertakannya.':''}`);
+ }catch(e){show(`Screenshot gagal: ${e.message==='need-auth'?'sesi Google Drive habis':e.message}`,false)}
+ finally{
+   stream?.getTracks().forEach(t=>t.stop());try{player?.destroy()}catch{}
+   box.classList.add('hidden');box.innerHTML='<div id="yt"></div>';btn.disabled=false;btn.textContent='📸 Screenshot otomatis momen penting';
+ }
+});
 getBtn.addEventListener('click',loadTranscript);
 const incoming=new URLSearchParams(location.search).get('url');if(incoming)urlEl.value=incoming;
 </script>
