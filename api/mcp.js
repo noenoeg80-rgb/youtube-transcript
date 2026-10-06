@@ -15,7 +15,7 @@ function createServer() {
     'get_youtube_transcript',
     {
       title: 'Get YouTube transcript',
-      description: 'Gunakan tool ini ketika pengguna memberikan link YouTube dan ingin isi video, ringkasan, analisis, poin penting, insight bisnis, entitas, atau ide konten. Ambil transcript melalui layanan Transcript AI milik pengguna. Untuk transcript panjang, panggil lagi dengan next_offset sampai has_more=false sebelum membuat analisis menyeluruh.',
+      description: 'Gunakan tool ini ketika pengguna memberikan link YouTube dan ingin isi video, ringkasan, analisis, poin penting, insight bisnis, entitas, atau ide konten. Ambil transcript melalui layanan Transcript AI milik pengguna. Untuk transcript panjang, panggil lagi dengan next_offset sampai has_more=false sebelum membuat analisis menyeluruh. Hasil pertama bisa memuat important_moments (detik penting + link lompat) untuk dijadikan bahan insight.',
       inputSchema: {
         url: z.string().min(1).describe('Link YouTube atau video ID 11 karakter. Dengan SUPADATA_API_KEY, link TikTok, Instagram, Facebook, dan X juga didukung.'),
         language: z.string().optional().describe('Kode bahasa seperti id atau en. Kosong/auto akan mencoba id, en, lalu bahasa asli.'),
@@ -32,7 +32,7 @@ function createServer() {
     async ({ url, language = 'auto', offset = 0, max_chars = 24000, timestamps = false }) => {
       try {
         const r = await getTranscript(url, language, 45000, { timestamps });
-        const { language: usedLanguage, source, video_id: id, source_url } = r;
+        const { language: usedLanguage, source, video_id: id, source_url, title, moments } = r;
         const timed = Boolean(timestamps && r.timed_text);
         const text = timed ? r.timed_text : r.text;
         const start = Math.min(offset, text.length);
@@ -41,6 +41,7 @@ function createServer() {
         const hasMore = end < text.length;
         const meta = {
           video_id: id,
+          ...(title ? { title } : {}),
           source_url,
           source,
           language: usedLanguage,
@@ -52,6 +53,8 @@ function createServer() {
           timestamps: timed,
           ...(timed && id ? { jump_url_template: `https://www.youtube.com/watch?v=${id}&t={seconds}s` } : {}),
           ...(r.timestamps_note ? { timestamps_note: r.timestamps_note } : {}),
+          // Important moments only on the first chunk, so paging does not repeat them.
+          ...(start === 0 && moments?.length ? { important_moments: moments.map((m) => ({ ...m, ...(id ? { url: `https://www.youtube.com/watch?v=${id}&t=${m.start}s` } : {}) })) } : {}),
         };
 
         return {

@@ -2,6 +2,8 @@
 // 1) Supadata (stable, paid) when SUPADATA_API_KEY is set — supports YouTube, TikTok, Instagram, Facebook, X.
 // 2) Fallback: free youtube-transcript.ai source (YouTube only, often rate-limited).
 
+import { pickMoments } from './_moments.js';
+
 export function youtubeId(value) {
   const v = String(value || '').trim();
   if (/^[\w-]{11}$/.test(v)) return v;
@@ -89,9 +91,10 @@ export function timedText(segments, groupSec = 30) {
   return lines.join('\n');
 }
 
-async function fromSupadata(sourceUrl, lang, deadline, withTimestamps = false) {
+// Always asks for segments: they feed timestamps and important-moment detection.
+async function fromSupadata(sourceUrl, lang, deadline) {
   const key = process.env.SUPADATA_API_KEY;
-  const params = new URLSearchParams({ url: sourceUrl, text: withTimestamps ? 'false' : 'true', mode: 'auto' });
+  const params = new URLSearchParams({ url: sourceUrl, text: 'false', mode: 'auto' });
   if (lang && lang !== 'auto') params.set('lang', lang);
   const headers = { 'x-api-key': key };
 
@@ -138,8 +141,21 @@ async function fromFreeSource(id, requestedLanguage) {
   throw new Error(lastError);
 }
 
+// Best-effort video title (YouTube oEmbed, no key). Used to name files saved to Drive.
+async function youtubeTitle(sourceUrl) {
+  try {
+    const r = await fetchWithTimeout(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(sourceUrl)}`, {}, 4000);
+    if (!r.ok) return null;
+    const d = await r.json();
+    return typeof d?.title === 'string' ? d.title : null;
+  } catch {
+    return null;
+  }
+}
+
 // input: YouTube link/ID, or (with Supadata) a TikTok/Instagram/Facebook/X link.
 // options.timestamps: also return segments + timed_text ("[mm:ss] ...") when the source supports it (Supadata).
+// moments (important timestamps, see _moments.js) are returned whenever segments are available.
 export async function getTranscript(input, language = 'auto', budgetMs = 50000, options = {}) {
   const withTimestamps = Boolean(options.timestamps);
   const deadline = Date.now() + budgetMs;
@@ -147,12 +163,14 @@ export async function getTranscript(input, language = 'auto', budgetMs = 50000, 
   const sourceUrl = id ? `https://www.youtube.com/watch?v=${id}` : String(input || '').trim();
   if (!id && !isHttpUrl(sourceUrl)) throw new Error('Link tidak valid.');
 
+  const titlePromise = id ? youtubeTitle(sourceUrl) : Promise.resolve(null);
   const errors = [];
   if (process.env.SUPADATA_API_KEY) {
     try {
-      const res = await fromSupadata(sourceUrl, language, deadline, withTimestamps);
+      const res = await fromSupadata(sourceUrl, language, deadline);
       if (validTranscript(res.text)) {
-        const out = { text: res.text, language: res.language, source: 'supadata', video_id: id, source_url: sourceUrl };
+        const out = { text: res.text, language: res.language, source: 'supadata', video_id: id, source_url: sourceUrl, title: await titlePromise };
+        if (res.segments) out.moments = pickMoments(res.segments);
         if (withTimestamps && res.segments) {
           out.segments = res.segments;
           out.timed_text = timedText(res.segments);
@@ -167,7 +185,7 @@ export async function getTranscript(input, language = 'auto', budgetMs = 50000, 
   if (id) {
     try {
       const res = await fromFreeSource(id, language);
-      const out = { ...res, source: 'gratis', video_id: id, source_url: sourceUrl };
+      const out = { ...res, source: 'gratis', video_id: id, source_url: sourceUrl, title: await titlePromise };
       if (withTimestamps) out.timestamps_note = 'Sumber gratis tidak menyediakan timestamp; butuh SUPADATA_API_KEY.';
       return out;
     } catch (e) {
