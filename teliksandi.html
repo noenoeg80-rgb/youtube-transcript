@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#09090b">
+<meta name="robots" content="noindex,nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Teliksandi">
+<title>Teliksandi</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;color:#f7f7f8;background:#09090b;--mut:#96929d;--dim:#77747f;--card:rgba(23,23,29,.86);--line:rgba(255,255,255,.08);--acc:#795fff;--acc2:#a996ff;--teal:#5fe0c5;--warm:#ffb37a}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 15% 0%,rgba(0,210,180,.14),transparent 26rem),radial-gradient(circle at 95% 18%,rgba(111,78,255,.16),transparent 22rem),#09090b}
+main{width:min(100%,760px);margin:auto;padding:calc(22px + env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom))}
+a{color:var(--acc2)}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding:8px 2px 4px}
+.tag{font-size:11px;letter-spacing:.14em;font-weight:800;color:#9894a3}
+h1{font-size:clamp(38px,10vw,58px);line-height:.95;letter-spacing:-.05em;margin:8px 0 6px}
+.sub{margin:0;color:var(--mut);font-size:13px;line-height:1.5}
+.back{font-size:13px;font-weight:800;text-decoration:none;white-space:nowrap}
+button{font:inherit;cursor:pointer;border:0}
+.reload{min-height:40px;padding:8px 14px;border-radius:12px;background:#202027;color:#eeeef2;font-weight:800;font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0 4px}
+.stat{padding:10px;border-radius:14px;background:var(--card);border:1px solid var(--line)}
+.stat b{display:block;font-size:22px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stat span{font-size:11px;color:var(--dim);font-weight:700}
+nav{position:sticky;top:0;z-index:5;display:flex;gap:6px;overflow-x:auto;padding:10px 0;margin:0 -16px;padding-inline:16px;background:linear-gradient(#09090b 70%,rgba(9,9,11,0));scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{flex:none;min-height:38px;padding:8px 14px;border-radius:999px;background:#17171d;color:#cfccd6;font-weight:800;font-size:13px;border:1px solid var(--line)}
+nav button[aria-pressed="true"]{background:linear-gradient(135deg,#795fff,#593bf1);color:#fff;border-color:transparent}
+.find{width:100%;border:1px solid rgba(255,255,255,.09);background:#101014;color:#f4f4f6;border-radius:14px;padding:12px 14px;font-size:16px;outline:none;margin:4px 0 10px}
+.find:focus{border-color:#765cff}
+.list{display:grid;gap:10px}
+.card{padding:14px;border-radius:18px;background:var(--card);border:1px solid var(--line);min-width:0;overflow-wrap:anywhere}
+.card h3{margin:0 0 4px;font-size:16px;line-height:1.35}
+.meta{font-size:12px;color:var(--dim);line-height:1.5}
+.pill{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.04em;padding:3px 8px;border-radius:999px;background:rgba(95,224,197,.12);color:var(--teal);margin:0 6px 4px 0}
+.pill.w{background:rgba(255,179,122,.12);color:var(--warm)}
+.body{font-size:14px;line-height:1.55;color:#d8d6de;white-space:pre-wrap;margin-top:6px}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.acts a{font-size:13px;font-weight:800;text-decoration:none;padding:8px 12px;border-radius:11px;background:#202027;color:#eeeef2}
+.shots{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.shots button{padding:0;background:#000;border-radius:9px;overflow:hidden;aspect-ratio:4/3}
+.shots img{width:100%;height:100%;object-fit:cover;display:block}
+details{margin-top:8px}
+summary{font-size:13px;font-weight:800;color:var(--acc2);cursor:pointer}
+.empty{padding:26px 14px;text-align:center;color:var(--dim);border:1px dashed var(--line);border-radius:16px;font-size:14px}
+.err{color:#ffa0b0}
+.lb{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top)) 10px calc(16px + env(safe-area-inset-bottom))}
+.lb img{max-width:100%;max-height:78vh;border-radius:10px;touch-action:pinch-zoom}
+.lb p{color:#cfccd6;font-size:14px;text-align:center;margin:12px 8px 0}
+.lb .x{position:absolute;top:calc(12px + env(safe-area-inset-top));right:12px;min-height:44px;min-width:44px;border-radius:999px;background:#202027;color:#fff;font-size:20px}
+.lb .nav{display:flex;gap:10px;margin-top:12px}
+.lb .nav button{min-height:44px;padding:0 18px;border-radius:12px;background:#202027;color:#fff;font-weight:800}
+.foot{font-size:12px;color:var(--dim);line-height:1.5;margin:16px 3px 0}
+@media(max-width:420px){.stats{grid-template-columns:repeat(2,1fr)}.shots{grid-template-columns:repeat(2,1fr)}}
+@media(prefers-reduced-motion:no-preference){.card{animation:in .25s ease both}@keyframes in{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}}
+</style>
+</head>
+<body>
+<main>
+<div class="top">
+  <div>
+    <div class="tag">SUPEROMBECK · INTEL SOSMED</div>
+    <h1>Teliksandi</h1>
+    <p class="sub" id="upd">Memuat Bank Data…</p>
+  </div>
+  <div style="display:grid;gap:8px;justify-items:end">
+    <a class="back" href="/">Transcript AI →</a>
+    <button class="reload" id="reload" type="button">Muat ulang</button>
+  </div>
+</div>
+
+<section class="stats" id="stats" aria-label="Ringkasan"></section>
+
+<nav id="tabs" aria-label="Bagian"></nav>
+<input class="find" id="find" type="search" placeholder="Cari judul, kata, tempat…" aria-label="Cari">
+<section class="list" id="list"><div class="empty">Memuat…</div></section>
+
+<p class="foot">Diisi otomatis oleh agen SuperOmbeck: berita tiap jam (06–23 WIB), tren tiap 3 jam, YouTube tiap pagi 05.30. Hanya data publik, baca saja. Ketuk gambar untuk memperbesar.</p>
+</main>
+
+<div class="lb" id="lb" hidden>
+  <button class="x" id="lbx" type="button" aria-label="Tutup">✕</button>
+  <img id="lbimg" alt="">
+  <p id="lbcap"></p>
+  <div class="nav"><button id="lbp" type="button">‹ Sebelumnya</button><button id="lbn" type="button">Berikutnya ›</button></div>
+</div>
+
+<script>
+const API='https://beglzlljgbcpmfktuvbs.supabase.co/rest/v1/rpc/hermes_bank_data';
+const KEY='sb_publishable__2ADgDgCMCyf_9Ux_U97Ng_S7OBp6SO'; // kunci publik (read-only lewat fungsi hermes_bank_data)
+const TABS=[['ringkas','Ringkas'],['video','YouTube'],['berita','Berita'],['tren','Tren'],['tempat','Tempat'],['misi','Misi']];
+const D={konten:[],kesimpulan:[],tren:[],tempat:[],misi:[],video:[]};
+let cur='ringkas';
+try{const s=localStorage.getItem('tk_tab');if(s&&TABS.some(t=>t[0]===s))cur=s}catch{}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safe=u=>/^https?:\/\//i.test(u||'')?u:'';
+const tgl=s=>{if(!s)return'';const d=new Date(s);return isNaN(d)?esc(s):d.toLocaleString('id-ID',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})};
+const num=n=>n==null?'':Number(n).toLocaleString('id-ID');
+const tagOf=c=>{const m=String(c||'').match(/^\[([^\]]+)\]\s*(.*)$/);return m?{tag:m[1],text:m[2]}:{tag:'',text:c||''}};
+
+async function rpc(t,n){
+  const r=await fetch(API,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify({p_tabel:t,p_batas:n})});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const j=await r.json();return Array.isArray(j)?j:[];
+}
+async function muat(){
+  $('reload').disabled=true;$('upd').textContent='Memuat Bank Data…';
+  try{
+    const [konten,kesimpulan,tren,tempat,misi,video]=await Promise.all([rpc('konten',300),rpc('kesimpulan',50),rpc('tren',150),rpc('tempat',300),rpc('misi',50),rpc('video',60)]);
+    Object.assign(D,{konten,kesimpulan,tren,tempat,misi,video});
+    $('upd').textContent='Diperbarui '+new Date().toLocaleString('id-ID',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    statistik();tampil();
+  }catch(e){
+    $('upd').innerHTML='<span class="err">Gagal memuat ('+esc(e.message)+'). Cek sinyal lalu tekan Muat ulang.</span>';
+  }finally{$('reload').disabled=false}
+}
+function berita(){return D.konten.filter(x=>x.platform==='google_news')}
+function yt(){return D.konten.filter(x=>x.platform==='youtube')}
+function statistik(){
+  const s=[[berita().length,'Berita'],[yt().length,'Video YouTube'],[D.tren.length,'Tren'],[D.tempat.length,'Tempat']];
+  $('stats').innerHTML=s.map(([n,l])=>`<div class="stat"><b>${num(n)}</b><span>${l}</span></div>`).join('');
+}
+
+/* ---------- kartu ---------- */
+let LB=[],LBi=0;
+function shotsHtml(v){
+  const m=(Array.isArray(v.momen)?v.momen:[]).filter(x=>x&&x.screenshot&&safe(x.screenshot.src));
+  if(!m.length)return'';
+  return `<div class="shots">${m.map((x,i)=>`<button type="button" data-lb="${esc(v.video_id)}" data-i="${i}" aria-label="Perbesar ${esc(x.label)}"><img loading="lazy" src="${esc(x.screenshot.src)}" alt="${esc(x.label)}"></button>`).join('')}</div>`;
+}
+function kartuVideo(v){
+  const t=tagOf(v.caption);
+  const momen=(Array.isArray(v.momen)?v.momen:[]).filter(x=>x&&x.start!=null);
+  return `<article class="card">
+    ${t.tag?`<span class="pill">${esc(t.tag)}</span>`:''}${v.sumber?`<span class="pill w">transkrip ${esc(v.sumber)}</span>`:''}
+    <h3>${esc(v.judul)}</h3>
+    <div class="meta">${esc(v.channel||'')}${v.views!=null?' · '+num(v.views)+'x ditonton':''} · dicek ${tgl(v.dibuat)}</div>
+    ${shotsHtml(v)}
+    ${momen.length?`<details><summary>Momen penting (${momen.length})</summary>${momen.map(x=>`<div class="body"><a href="${esc(safe(x.link))}" target="_blank" rel="noopener">${esc(x.clock||'')}</a> ${esc(x.label)}</div>`).join('')}</details>`:''}
+    ${v.cuplikan_transkrip?`<details><summary>Cuplikan transkrip</summary><div class="body">${esc(v.cuplikan_transkrip)}</div></details>`:''}
+    <div class="acts"><a href="${esc(safe(v.url))}" target="_blank" rel="noopener">Tonton</a><a href="/?url=${encodeURIComponent(v.url||'')}">Transkrip penuh</a></div>
+  </article>`;
+}
+function kartuYtRingan(x){
+  const t=tagOf(x.caption);
+  return `<article class="card">${t.tag?`<span class="pill">${esc(t.tag)}</span>`:''}<h3>${esc(t.text)}</h3>
+  <div class="meta">${esc(x.handle||'')}${x.views!=null?' · '+num(x.views)+'x ditonton':''}</div>
+  <div class="acts"><a href="${esc(safe(x.url))}" target="_blank" rel="noopener">Tonton</a><a href="/?url=${encodeURIComponent(x.url||'')}">Transkrip</a></div></article>`;
+}
+function kartuBerita(x){
+  const t=tagOf(x.caption);
+  return `<article class="card">${t.tag?`<span class="pill">${esc(t.tag)}</span>`:''}<h3>${esc(t.text)}</h3>
+  <div class="meta">${esc(x.handle||'')} · ${tgl(x.diposting||x.dilihat)}</div>
+  ${safe(x.url)?`<div class="acts"><a href="${esc(x.url)}" target="_blank" rel="noopener">Baca</a></div>`:''}</article>`;
+}
+function kartuTren(x){
+  return `<article class="card"><span class="pill">${esc(x.sumber)}</span>${x.nilai!=null?`<span class="pill w">${num(x.nilai)}+</span>`:''}
+  <h3>${esc(x.kata)}</h3><div class="meta">${esc(x.wilayah||'')} · ${esc(x.tanggal||'')}</div>${x.catatan?`<div class="body">${esc(x.catatan)}</div>`:''}</article>`;
+}
+function kartuTempat(x){
+  const maps=x.lat&&x.lng?`https://www.google.com/maps/search/?api=1&query=${x.lat},${x.lng}`:`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((x.nama||'')+' '+(x.alamat||''))}`;
+  return `<article class="card"><span class="pill">${esc(x.kota||'')}</span>${x.rating?`<span class="pill w">★ ${esc(x.rating)} · ${num(x.jumlah_ulasan||0)}</span>`:''}
+  <h3>${esc(x.nama)}</h3><div class="meta">${esc(x.kategori||'')}</div><div class="body">${esc(x.alamat||'')}${x.telepon?'\nTelp: '+esc(x.telepon):''}</div>
+  <div class="acts"><a href="${esc(maps)}" target="_blank" rel="noopener">Peta</a>${safe(x.website)?`<a href="${esc(x.website)}" target="_blank" rel="noopener">Website</a>`:''}</div></article>`;
+}
+function kartuMisi(x){
+  return `<article class="card"><span class="pill">${esc(x.status)}</span><span class="pill w">${esc(x.bisnis||'')}</span>
+  <h3>#${esc(x.id)} ${esc(x.judul)}</h3><div class="body">${esc(x.ringkasan||'')}</div></article>`;
+}
+function kartuKesimpulan(x){
+  return `<article class="card"><span class="pill">kesimpulan</span><h3>${esc(x.judul)}</h3><div class="meta">${tgl(x.dibuat)}</div><div class="body">${esc(x.isi)}</div></article>`;
+}
+
+/* ---------- tampilan ---------- */
+function cocok(x,q){return !q||JSON.stringify(x).toLowerCase().includes(q)}
+function tampil(){
+  const q=$('find').value.trim().toLowerCase();
+  let html='';
+  if(cur==='ringkas'){
+    const k=D.kesimpulan.filter(x=>cocok(x,q)).map(kartuKesimpulan).join('');
+    const v=D.video.filter(x=>cocok(x,q)).slice(0,3).map(kartuVideo).join('');
+    html=(k||'')+(v?'<div class="tag" style="margin:8px 2px 0">VIDEO TERBARU</div>'+v:'');
+  }else if(cur==='video'){
+    const detail=D.video.filter(x=>cocok(x,q));
+    const ids=new Set(detail.map(x=>x.url));
+    const lain=yt().filter(x=>!ids.has(x.url)&&cocok(x,q));
+    html=detail.map(kartuVideo).join('')+(lain.length?`<div class="tag" style="margin:8px 2px 0">VIDEO LAIN (${lain.length})</div>`+lain.map(kartuYtRingan).join(''):'');
+  }else if(cur==='berita'){html=berita().filter(x=>cocok(x,q)).map(kartuBerita).join('')}
+  else if(cur==='tren'){html=D.tren.filter(x=>cocok(x,q)).map(kartuTren).join('')}
+  else if(cur==='tempat'){html=D.tempat.filter(x=>cocok(x,q)).map(kartuTempat).join('')}
+  else if(cur==='misi'){html=D.misi.filter(x=>cocok(x,q)).map(kartuMisi).join('')}
+  $('list').innerHTML=html||'<div class="empty">Belum ada data di bagian ini.</div>';
+}
+function pilih(t){
+  cur=t;try{localStorage.setItem('tk_tab',t)}catch{}
+  document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.t===t)));
+  tampil();
+}
+$('tabs').innerHTML=TABS.map(([t,n])=>`<button type="button" data-t="${t}" aria-pressed="${t===cur}">${n}</button>`).join('');
+$('tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)pilih(b.dataset.t)});
+$('find').addEventListener('input',tampil);
+$('reload').addEventListener('click',muat);
+
+/* ---------- perbesar gambar ---------- */
+function buka(list,i){LB=list;LBi=i;gambar();$('lb').hidden=false;document.body.style.overflow='hidden'}
+function gambar(){const x=LB[LBi];$('lbimg').src=x.screenshot.src;$('lbimg').alt=x.label||'';$('lbcap').textContent=(x.clock?x.clock+' · ':'')+(x.label||'')+'  ('+(LBi+1)+'/'+LB.length+')'}
+function tutup(){$('lb').hidden=true;document.body.style.overflow=''}
+$('list').addEventListener('click',e=>{
+  const b=e.target.closest('[data-lb]');if(!b)return;
+  const v=D.video.find(x=>x.video_id===b.dataset.lb);if(!v)return;
+  const m=(v.momen||[]).filter(x=>x&&x.screenshot&&safe(x.screenshot.src));
+  buka(m,Number(b.dataset.i)||0);
+});
+$('lbx').onclick=tutup;
+$('lb').addEventListener('click',e=>{if(e.target.id==='lb')tutup()});
+$('lbp').onclick=()=>{LBi=(LBi-1+LB.length)%LB.length;gambar()};
+$('lbn').onclick=()=>{LBi=(LBi+1)%LB.length;gambar()};
+document.addEventListener('keydown',e=>{if($('lb').hidden)return;if(e.key==='Escape')tutup();if(e.key==='ArrowLeft')$('lbp').click();if(e.key==='ArrowRight')$('lbn').click()});
+
+muat();
+</script>
+</body>
+</html>
