@@ -16,9 +16,27 @@ function origin(req) {
   return `${proto}://${host}`;
 }
 
-async function screenshots(id, times, base) {
-  if (!times.length) return [];
+// Without timed segments (free transcript source) there are no moments:
+// fall back to evenly spaced preview frames across the video.
+async function evenShots(id, base, count = 5) {
   const sb = await storyboardSpec(id);
+  const len = sb?.lengthSeconds || 0;
+  if (!len) return [];
+  const times = Array.from({ length: count }, (_, i) => Math.floor((len * (i + 1)) / (count + 1)));
+  const shots = await screenshots(id, times, base, sb);
+  return times.map((t, i) => ({
+    start: t,
+    clock: clock(t),
+    link: `https://www.youtube.com/watch?v=${id}&t=${t}s`,
+    label: 'Cuplikan otomatis',
+    tags: ['cuplikan'],
+    screenshot: shots[i] || null,
+  }));
+}
+
+async function screenshots(id, times, base, known = null) {
+  if (!times.length) return [];
+  const sb = known || (await storyboardSpec(id));
   const levels = sb ? parseSpec(sb.spec, sb.lengthSeconds) : [];
   if (!levels.length) return times.map(() => null);
   const level = levels.reduce((a, b) => (b.width * b.height > a.width * a.height ? b : a));
@@ -46,6 +64,7 @@ async function detail(video, base, deadline) {
       tags: m.tags,
       screenshot: shots[i] || null,
     }));
+    if (!out.moments.length) out.moments = await evenShots(video.video_id, base).catch(() => []);
   } catch (e) {
     out.error = e?.message || 'Transkrip gagal.';
   }
