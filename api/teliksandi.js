@@ -21,7 +21,7 @@ function origin(req) {
 async function evenShots(id, base, count = 5) {
   const sb = await storyboardSpec(id);
   const len = sb?.lengthSeconds || 0;
-  if (!len) return [];
+  if (!len) return thumbShots(id);
   const times = Array.from({ length: count }, (_, i) => Math.floor((len * (i + 1)) / (count + 1)));
   const shots = await screenshots(id, times, base, sb);
   return times.map((t, i) => ({
@@ -31,6 +31,25 @@ async function evenShots(id, base, count = 5) {
     label: 'Cuplikan otomatis',
     tags: ['cuplikan'],
     screenshot: shots[i] || null,
+  }));
+}
+
+// YouTube's own still images (cover + auto frames near 25%, 50%, 75% of the video).
+// Always public, no storyboard needed — used when YouTube refuses the storyboard to servers.
+function thumbShots(id) {
+  const shots = [
+    ['hqdefault', 'Sampul video', 'sampul'],
+    ['hq1', 'Cuplikan ±25%', 'cuplikan'],
+    ['hq2', 'Cuplikan ±50%', 'cuplikan'],
+    ['hq3', 'Cuplikan ±75%', 'cuplikan'],
+  ];
+  return shots.map(([name, label, tag]) => ({
+    start: null,
+    clock: null,
+    link: `https://www.youtube.com/watch?v=${id}`,
+    label,
+    tags: [tag],
+    screenshot: { src: `https://i.ytimg.com/vi/${id}/${name}.jpg`, x: 0, y: 0, w: 480, h: 360, full: true },
   }));
 }
 
