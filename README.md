@@ -1,4 +1,4 @@
-# youtube-transcript (Transcript AI)
+# YouTube Transkrip (dulu Transcript AI)
 
 Tempel link YouTube → ambil transcript → bagikan ke ChatGPT. Juga tersedia sebagai MCP server di `/api/mcp`.
 

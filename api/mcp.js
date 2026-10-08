@@ -27,7 +27,7 @@ export const config = { maxDuration: 60 };
 
 function createServer() {
   const server = new McpServer({
-    name: 'transcript-ai',
+    name: 'youtube-transkrip',
     version: '1.0.0',
   });
 
