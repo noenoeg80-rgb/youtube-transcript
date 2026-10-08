@@ -75,13 +75,14 @@ async function shotsFor(id, times, duration, base) {
   return times.map((t) => {
     if (level) {
       const f = frameAt(level, t);
-      return { src: `${base}/api/frames?img=${encodeURIComponent(f.url)}`, x: f.x, y: f.y, w: f.w, h: f.h, waktu: clock(t), tepat: true };
+      const src = `${base}/api/frames?img=${encodeURIComponent(f.url)}`;
+      return { src, x: f.x, y: f.y, w: f.w, h: f.h, waktu: clock(t), tepat: true, image_url: src, crop: { x: f.x, y: f.y, w: f.w, h: f.h } };
     }
-    if (!duration) return { src: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`, waktu: null, tepat: false, catatan: 'sampul video (durasi tidak diketahui)' };
+    if (!duration) return { src: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`, image_url: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`, waktu: null, tepat: false, catatan: 'sampul video (durasi tidak diketahui)' };
     const frac = t / duration;
     const k = frac < 0.375 ? 1 : frac < 0.625 ? 2 : 3;
     const approx = Math.round((duration * k) / 4);
-    return { src: `https://i.ytimg.com/vi/${id}/hq${k}.jpg`, waktu: clock(approx), tepat: Math.abs(approx - t) <= 20, catatan: `gambar terdekat (±${k * 25}% video, sekitar ${clock(approx)})` };
+    return { src: `https://i.ytimg.com/vi/${id}/hq${k}.jpg`, image_url: `https://i.ytimg.com/vi/${id}/hq${k}.jpg`, waktu: clock(approx), tepat: Math.abs(approx - t) <= 20, catatan: `gambar terdekat (±${k * 25}% video, sekitar ${clock(approx)})` };
   });
 }
 

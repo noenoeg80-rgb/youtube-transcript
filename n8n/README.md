@@ -1,11 +1,15 @@
-# n8n · Teliksandi SOP Ambil Data YouTube
+# n8n · Teliksandi SOP Ambil Data YouTube (alur baku v1.2, mata wajib)
 
-Import `teliksandi-youtube-sop.json` ke n8n VPS (Workflows → Import from file).
+Import `teliksandi-youtube-sop.json` ke n8n VPS (Workflows → Import from URL):
+`https://raw.githubusercontent.com/noenoeg80-rgb/youtube-transcript/main/n8n/teliksandi-youtube-sop.json`
 
-Alur = SOP Ombeck:
-A Perintah (webhook `POST /webhook/teliksandi-youtube` body `{"topik":"...", "upload":"minggu|bulan|semua", "jumlah":2}`)
-→ B Koordinator (topik "terbaru" otomatis dibatasi upload seminggu)
-→ C–I satu panggilan ke Transcript AI `/api/teliksandi?mode=paket`: cari, seleksi relevan, transkrip, bagian terpilih + konteks, screenshot
-→ J–K Konteks jelas? → L Kumpulkan paket
-→ (belum) M–P lihat pelan / tandai, tidak menebak → L
-→ Q Bagian Pengangkutan: RPC `teliksandi_terima_paket` di KEPO (butuh env `SUPEROMBECK_TOKEN` di n8n, diketik Ombeck sendiri).
+Variables (Settings → Variables), diketik Ombeck sendiri:
+- `SUPEROMBECK_TOKEN` — token Hermes; dipakai langkah Q (Bank Data) & R (memori Hermes).
+- `YT_TRANSKRIP_URL` — alamat YouTube Transkrip. Di VPS yang sama: `http://youtube-transkrip:3000` (nama container). Kosong = pakai Vercel.
+
+Alur: A Perintah → B Validasi (tolak data pribadi/akun RMS) → C–I YouTube Transkrip `/api/riset` →
+Pemeriksa bidang wajib → J Robot Pencocok `/api/cocok` (MATA WAJIB) → K Konteks jelas? →
+(ya) L Paket → Q Bank Data → R Hermes mengingat · (belum) M–P lihat pelan / tandai → L.
+
+Aturan mata: paket hanya boleh LENGKAP bila robot mode `mata` dan `semua_dilihat=true`. Tanpa mata, paket ditandai
+"MATA TIDAK AKTIF" dan masuk jalur lihat pelan. Tidak ada tebakan.

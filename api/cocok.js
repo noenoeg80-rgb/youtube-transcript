@@ -29,16 +29,29 @@ function dataUrlParts(d) {
   return m ? { mime: m[1], data: m[2] } : null;
 }
 
-// Items may carry image_url (public https) instead of a data URL; the robot downloads it (max 2 MB).
+// Items may carry image_url instead of a data URL. Allowed: YouTube stills, or this app's own /api/frames proxy
+// (storyboard sprite + crop rectangle). The robot downloads and, for sprites, crops the exact cell itself (sharp).
+const OWN = (process.env.APP_BASE_URL || 'https://youtube-transcript-woad-nine.vercel.app').replace(/\/$/, '');
+function allowedUrl(u) { return /^https:\/\/(i\d*\.ytimg\.com|img\.youtube\.com)\//.test(u) || u.startsWith(OWN + '/api/frames?') || u.startsWith('/api/frames?'); }
 async function hydrate(items) {
   return Promise.all(items.map(async (it) => {
-    if (it.image || !/^https:\/\/(i\d*\.ytimg\.com|img\.youtube\.com)\//.test(it.image_url || '')) return it;
+    let u = String(it.image_url || '');
+    if (u.startsWith('/')) u = OWN + u;
+    if (it.image || !allowedUrl(u)) return it;
     try {
-      const r = await fetch(it.image_url);
+      const r = await fetch(u);
       if (!r.ok) return it;
-      const buf = Buffer.from(await r.arrayBuffer());
-      if (buf.length > 2_000_000) return it;
-      const mime = r.headers.get('content-type')?.split(';')[0] || 'image/jpeg';
+      let buf = Buffer.from(await r.arrayBuffer());
+      if (buf.length > 3_000_000) return it;
+      let mime = r.headers.get('content-type')?.split(';')[0] || 'image/jpeg';
+      const c = it.crop;
+      if (c && Number.isFinite(c.w) && Number.isFinite(c.h) && c.w > 0 && c.h > 0) {
+        try {
+          const sharp = (await import('sharp')).default;
+          buf = await sharp(buf).extract({ left: Math.max(0, c.x | 0), top: Math.max(0, c.y | 0), width: c.w | 0, height: c.h | 0 }).jpeg({ quality: 85 }).toBuffer();
+          mime = 'image/jpeg';
+        } catch { /* sharp unavailable: whole sprite is sent */ }
+      }
       return { ...it, image: `data:${mime};base64,${buf.toString('base64')}` };
     } catch { return it; }
   }));
@@ -121,7 +134,8 @@ export default async function handler(req, res) {
     } else out = withoutEyes(items);
     // merge back clock/label so the client can render without re-joining
     const byStart = new Map(items.map((i) => [Number(i.start), i]));
-    out.items = (out.items || []).map((o) => { const src = byStart.get(Number(o.start)) || {}; return { ...o, clock: src.clock, label: src.label, exact: src.exact !== false }; });
+    out.items = (out.items || []).map((o) => { const src = byStart.get(Number(o.start)) || {}; return { ...o, clock: src.clock, label: src.label, exact: src.exact !== false, dilihat: Boolean(src.image) && out.mode === 'mata' }; });
+    out.semua_dilihat = out.items.length > 0 && out.items.every((o) => o.dilihat);
     res.statusCode = 200;
     res.end(JSON.stringify(out));
   } catch (e) {

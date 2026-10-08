@@ -28,3 +28,14 @@ Teliksandi **memanggil** YouTube Transkrip sebagai layanan, lalu memutuskan send
 
 ## Env (Vercel)
 `GEMINI_API_KEY` (mata Robot Pencocok, wajib untuk mode mata) · `SUPADATA_API_KEY` (opsional, transkrip stabil) · `GOOGLE_CLIENT_ID`, `DRIVE_FOLDER_NAME` (opsional, simpan ke Drive)
+
+## Tanam di VPS Hostinger (baku, satu rumah dengan n8n)
+```bash
+ssh ke VPS srv2040922
+git clone https://github.com/noenoeg80-rgb/youtube-transcript.git && cd youtube-transcript
+cp .env.example .env && nano .env        # isi GEMINI_API_KEY (wajib)
+docker compose up -d --build             # jalan di port 3100
+curl http://127.0.0.1:3100/api/status    # mata_gemini harus TERPASANG
+```
+Lalu di n8n: Variables → `YT_TRANSKRIP_URL = http://youtube-transkrip:3000` (kalau n8n di docker network yang sama) atau `http://127.0.0.1:3100`.
+Vercel tetap hidup sebagai cadangan publik untuk HP.

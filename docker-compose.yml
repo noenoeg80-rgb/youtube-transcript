@@ -1,0 +1,12 @@
+# YouTube Transkrip di VPS Hostinger (satu rumah dengan n8n & Hermes).
+# Jalankan:  cp .env.example .env  → isi GEMINI_API_KEY  →  docker compose up -d --build
+services:
+  youtube-transkrip:
+    build: .
+    container_name: youtube-transkrip
+    restart: unless-stopped
+    ports:
+      - "3100:3000"          # akses: http://IP-VPS:3100  (atau pasang di belakang reverse proxy n8n/Traefik)
+    env_file: .env
+    environment:
+      - APP_BASE_URL=${APP_BASE_URL:-http://youtube-transkrip:3000}
