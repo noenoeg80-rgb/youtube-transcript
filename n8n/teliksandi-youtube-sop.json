@@ -1,0 +1,146 @@
+{
+  "name": "Teliksandi · SOP Ambil Data YouTube",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "teliksandi-youtube",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "a1",
+      "name": "A · Perintah Ombeck (webhook)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "webhookId": "teliksandi-youtube"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "t", "name": "topik", "value": "={{ ($json.body && $json.body.topik) || $json.topik || 'AI agent bisnis' }}", "type": "string" },
+            { "id": "u", "name": "upload", "value": "={{ ($json.body && $json.body.upload) || (/terbaru|baru|latest/i.test(($json.body && $json.body.topik) || '') ? 'minggu' : 'bulan') }}", "type": "string" },
+            { "id": "d", "name": "jumlah", "value": "={{ ($json.body && $json.body.jumlah) || 2 }}", "type": "number" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b1",
+      "name": "B · Koordinator: tetapkan topik & aturan",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://youtube-transcript-woad-nine.vercel.app/api/teliksandi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "mode", "value": "paket" },
+            { "name": "q", "value": "={{ $json.topik }}" },
+            { "name": "upload", "value": "={{ $json.upload }}" },
+            { "name": "deep", "value": "={{ $json.jumlah }}" },
+            { "name": "n", "value": "12" }
+          ]
+        },
+        "options": { "timeout": 60000 }
+      },
+      "id": "c1",
+      "name": "C–I · Cari, seleksi, transkrip (Transcript AI), bagian relevan, screenshot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 300],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "paket",
+        "include": "selectedOtherFields",
+        "fieldsToInclude": "perintah",
+        "options": {}
+      },
+      "id": "d1",
+      "name": "Pecah per video",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose" },
+          "combinator": "and",
+          "conditions": [
+            { "id": "k1", "leftValue": "={{ $json.konteks_jelas }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true", "singleValue": true } }
+          ]
+        },
+        "options": {}
+      },
+      "id": "k1",
+      "name": "J–K · Konteks sudah jelas?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [880, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// M–N · Lihat pelan: tiap bagian yang gambarnya belum tepat diberi link ke detiknya\n// dan diserahkan ke Hermes/Claude Pekerja untuk ditonton & di-screenshot ulang.\n// Tidak menebak: kalau masih belum jelas, ditandai (P).\nreturn $input.all().map(i => {\n  const p = i.json;\n  const tugas = (p.perlu_lihat_pelan || []).map(x => `${x.waktu} → ${x.link} (${x.alasan})`);\n  return { json: { ...p,\n    tindak_lanjut: tugas.length ? 'LIHAT_PELAN' : 'TANDAI_KURANG',\n    tugas_lihat_pelan: tugas,\n    status: p.transkrip ? 'PERLU_LIHAT_PELAN' : 'KURANG_BAHAN',\n    catatan_konteks: (p.catatan_konteks || '') + ' | Bagian belum dipahami ditandai, tidak ditebak.'\n  } };\n});"
+      },
+      "id": "m1",
+      "name": "M–P · Lihat pelan / tandai yang belum jelas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1100, 420]
+    },
+    {
+      "parameters": {
+        "jsCode": "// L · Kumpulkan paket bahan (format serah-terima wajib)\nreturn $input.all().map(i => {\n  const p = i.json;\n  return { json: {\n    perintah: p.perintah,\n    link: p.link, judul: p.judul, kanal: p.kanal,\n    tanggal_unggah: p.tanggal_unggah_perkiraan || p.tanggal_unggah_teks,\n    transkrip: p.transkrip,\n    bagian_terpilih: p.bagian_terpilih,\n    screenshot: (p.bagian_terpilih || []).map(b => ({ waktu: b.screenshot && b.screenshot.waktu, src: b.screenshot && b.screenshot.src, tepat: b.screenshot && b.screenshot.tepat })),\n    catatan_konteks: p.catatan_konteks,\n    status: p.status, kekurangan: p.kekurangan || [], tugas_lihat_pelan: p.tugas_lihat_pelan || []\n  } };\n});"
+      },
+      "id": "l1",
+      "name": "L · Kumpulkan paket bahan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1320, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://beglzlljgbcpmfktuvbs.supabase.co/rest/v1/rpc/teliksandi_terima_paket",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "sb_publishable__2ADgDgCMCyf_9Ux_U97Ng_S7OBp6SO" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_token: $env.SUPEROMBECK_TOKEN, p_paket: $json }) }}",
+        "options": {}
+      },
+      "id": "q1",
+      "name": "Q · Serahkan ke Bagian Pengangkutan (Bank Data KEPO)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1540, 300]
+    }
+  ],
+  "connections": {
+    "A · Perintah Ombeck (webhook)": { "main": [[{ "node": "B · Koordinator: tetapkan topik & aturan", "type": "main", "index": 0 }]] },
+    "B · Koordinator: tetapkan topik & aturan": { "main": [[{ "node": "C–I · Cari, seleksi, transkrip (Transcript AI), bagian relevan, screenshot", "type": "main", "index": 0 }]] },
+    "C–I · Cari, seleksi, transkrip (Transcript AI), bagian relevan, screenshot": { "main": [[{ "node": "Pecah per video", "type": "main", "index": 0 }]] },
+    "Pecah per video": { "main": [[{ "node": "J–K · Konteks sudah jelas?", "type": "main", "index": 0 }]] },
+    "J–K · Konteks sudah jelas?": { "main": [
+      [{ "node": "L · Kumpulkan paket bahan", "type": "main", "index": 0 }],
+      [{ "node": "M–P · Lihat pelan / tandai yang belum jelas", "type": "main", "index": 0 }]
+    ] },
+    "M–P · Lihat pelan / tandai yang belum jelas": { "main": [[{ "node": "L · Kumpulkan paket bahan", "type": "main", "index": 0 }]] },
+    "L · Kumpulkan paket bahan": { "main": [[{ "node": "Q · Serahkan ke Bagian Pengangkutan (Bank Data KEPO)", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {}
+}

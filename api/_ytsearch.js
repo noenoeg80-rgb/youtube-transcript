@@ -47,7 +47,29 @@ function collect(node, out) {
   for (const k of Object.keys(node)) collect(node[k], out);
 }
 
-export async function searchYouTube(query, { limit = 10, upload = 'minggu', hl = 'id', gl = 'ID' } = {}) {
+// Age in days from "3 hari yang lalu" / "2 weeks ago" (Infinity if unknown).
+export function ageDays(published) {
+  const t = String(published || '').toLowerCase();
+  const m = t.match(/(\d+)\s*(detik|menit|jam|hari|minggu|bulan|tahun|second|minute|hour|day|week|month|year)/);
+  if (!m) return Infinity;
+  const d = { detik: 0, second: 0, menit: 0, minute: 0, jam: 0, hour: 0, hari: 1, day: 1, minggu: 7, week: 7, bulan: 30, month: 30, tahun: 365, year: 365 }[m[2]];
+  return Number(m[1]) * d;
+}
+const MAX_AGE = { hari: 1, minggu: 7, bulan: 31, semua: Infinity };
+
+// YouTube sometimes answers an upload-date filtered search with nothing:
+// then search unfiltered and apply the age limit ourselves.
+export async function searchYouTube(query, opts = {}) {
+  const upload = opts.upload || 'minggu';
+  let out = await searchOnce(query, opts);
+  if (!out.length && upload !== 'semua') {
+    const all = await searchOnce(query, { ...opts, upload: 'semua', limit: 20 });
+    out = all.filter((v) => ageDays(v.published_text) <= (MAX_AGE[upload] ?? 31)).slice(0, opts.limit || 10);
+  }
+  return out;
+}
+
+async function searchOnce(query, { limit = 10, upload = 'minggu', hl = 'id', gl = 'ID' } = {}) {
   const body = {
     query,
     context: { client: { clientName: 'WEB', clientVersion: '2.20250101.00.00', hl, gl } },
