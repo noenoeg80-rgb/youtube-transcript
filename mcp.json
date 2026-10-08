@@ -3,7 +3,7 @@
   "mcpServers": {
     "transcript-ai": {
       "type": "streamable-http",
-      "url": "https://youtube-transcript-anita-5823.vercel.app/api/mcp"
+      "url": "https://youtube-transcript-woad-nine.vercel.app/api/mcp"
     }
   }
 }
