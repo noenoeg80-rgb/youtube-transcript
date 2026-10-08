@@ -10,7 +10,10 @@
 
 export const config = { maxDuration: 60 };
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-flash-latest';
+// Model utama + cadangan: saat satu model penuh (high demand / 429 / 503), coba model berikutnya.
+const MODELS = (process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : []).concat(['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-flash-lite-latest', 'gemini-2.0-flash']).filter((m, i, a) => a.indexOf(m) === i);
+const MODEL = MODELS[0];
+const retryable = (msg) => /high demand|overloaded|try again later|resource.*exhausted|429|503|unavailable/i.test(String(msg || ''));
 
 function readBody(req) {
   return new Promise((ok, no) => {
@@ -44,23 +47,35 @@ Video: ${video.title || video.video_id}`,
     if (img) parts.push({ inline_data: { mime_type: img.mime, data: img.data } });
     else parts.push({ text: '(gambar tidak tersedia)' });
   }
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 45000);
-  try {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(key)}`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ contents: [{ role: 'user', parts }], generationConfig: { temperature: 0.2, responseMimeType: 'application/json' } }),
-      signal: controller.signal,
-    });
-    const d = await r.json();
-    if (!r.ok) throw new Error(d?.error?.message || `Gemini HTTP ${r.status}`);
-    const text = d?.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('') || '{}';
-    const out = JSON.parse(text.replace(/^```json\s*|```$/g, ''));
-    return { mode: 'mata', model: MODEL, ...out };
-  } finally {
-    clearTimeout(timer);
+  let lastErr = null;
+  for (const model of MODELS) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 40000);
+    try {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ contents: [{ role: 'user', parts }], generationConfig: { temperature: 0.2, responseMimeType: 'application/json' } }),
+        signal: controller.signal,
+      });
+      const d = await r.json();
+      if (!r.ok) {
+        const msg = d?.error?.message || `Gemini HTTP ${r.status}`;
+        if (retryable(msg) || retryable(r.status)) { lastErr = new Error(`${model}: ${msg}`); continue; }
+        throw new Error(msg);
+      }
+      const text = d?.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('') || '{}';
+      const out = JSON.parse(text.replace(/^```json\s*|```$/g, ''));
+      return { mode: 'mata', model, ...out };
+    } catch (e) {
+      if (e?.name === 'AbortError') { lastErr = new Error(`${model}: waktu habis`); continue; }
+      if (retryable(e?.message)) { lastErr = e; continue; }
+      throw e;
+    } finally {
+      clearTimeout(timer);
+    }
   }
+  throw lastErr || new Error('Semua model Gemini sedang penuh.');
 }
 
 function withoutEyes(items) {
