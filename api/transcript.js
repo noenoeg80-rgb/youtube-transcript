@@ -16,7 +16,9 @@ export default async function handler(req, res) {
   const lang = url.searchParams.get('lang') || 'auto';
   const timestamps = ['1', 'true', 'yes'].includes(String(url.searchParams.get('timestamps') || '').toLowerCase());
   try {
-    const result = await getTranscript(input, lang, 50000, { timestamps });
+    // segments always requested: they feed screenshot context in the app even without [mm:ss] text.
+    const result = await getTranscript(input, lang, 50000, { timestamps, segments: true });
+    if (!timestamps) delete result.timed_text;
     res.statusCode = 200;
     res.end(JSON.stringify(result));
   } catch (e) {

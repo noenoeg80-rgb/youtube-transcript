@@ -20,11 +20,22 @@ export default async function handler(req, res) {
     res.end(JSON.stringify({ error: 'Butuh v (video YouTube) dan t (detik, dipisah koma).' }));
     return;
   }
-  const sb = await storyboardSpec(id);
+  let sb = await storyboardSpec(id);
+  // Client may pass the storyboard spec it read from the YouTube player (server lookups are often refused).
+  const clientSpec = url.searchParams.get('spec');
+  if (!sb && clientSpec && clientSpec.includes('|')) sb = { spec: clientSpec, lengthSeconds: Number(url.searchParams.get('len')) || 0 };
   const levels = sb ? parseSpec(sb.spec, sb.lengthSeconds) : [];
   if (!levels.length) {
-    res.statusCode = 404;
-    res.end(JSON.stringify({ error: 'Gambar pratinjau YouTube tidak tersedia untuk video ini.' }));
+    // Fallback: YouTube's official stills (cover + frames near 25/50/75%). Always available, not time-exact.
+    const len = Number(url.searchParams.get('len')) || 0;
+    const frames = times.map((t) => {
+      const k = len ? Math.min(3, Math.max(1, Math.round((t / len) * 4))) : 0;
+      const name = k ? `hq${k}` : 'hqdefault';
+      const approx = len ? Math.round((len * k) / 4) : null;
+      return { t, src: `https://i.ytimg.com/vi/${id}/${name}.jpg`, x: 0, y: 0, w: 480, h: 360, full: true, approx, exact: false };
+    });
+    res.statusCode = 200;
+    res.end(JSON.stringify({ video_id: id, width: 480, height: 360, exact: false, frames, note: 'Storyboard ditolak YouTube; dipakai gambar resmi terdekat (±25/50/75%).' }));
     return;
   }
   const level = levels.reduce((a, b) => (b.width * b.height > a.width * a.height ? b : a));
@@ -32,7 +43,7 @@ export default async function handler(req, res) {
     const f = frameAt(level, t);
     return { t, src: `/api/frames?img=${encodeURIComponent(f.url)}`, x: f.x, y: f.y, w: f.w, h: f.h };
   });
-  res.end(JSON.stringify({ video_id: id, width: level.width, height: level.height, frames }));
+  res.end(JSON.stringify({ video_id: id, width: level.width, height: level.height, exact: true, frames: frames.map((f) => ({ ...f, exact: true })) }));
 }
 
 async function proxy(img, res) {
