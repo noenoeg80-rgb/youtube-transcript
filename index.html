@@ -50,6 +50,7 @@
 <p class="hint">Saat menu Bagikan muncul, pilih ChatGPT. Tidak perlu memilih jenis analisis lagi.</p>
 </section>
 
+<p id="mata" class="hint" style="margin-top:12px">Memeriksa mata Gemini…</p>
 <p class="foot">Kalau ingin mulai ulang, cukup refresh aplikasi atau tekan “Transkrip Baru”. Google Drive diakses langsung dari browsermu dengan izin terbatas (hanya file yang dibuat aplikasi ini); server tidak menyimpan transkrip, screenshot, atau token.</p>
 </main>
 <div class="lb hidden" id="lb"><button class="x" id="lbx" type="button" aria-label="Tutup">✕</button><img id="lbimg" alt=""><p id="lbcap"></p></div>
@@ -407,6 +408,7 @@ $('#shotBtn').addEventListener('click',async()=>{
  }
 });
 getBtn.addEventListener('click',loadTranscript);
+fetch('/api/status').then(r=>r.json()).then(d=>{const el=$('#mata');if(d.mata_gemini==='TERPASANG'){el.textContent='🟢 Mata Gemini terpasang ('+d.model_mata+'). Robot Pencocok bisa melihat gambar.';el.style.color='#8ce8c5'}else{el.textContent='🟠 Mata Gemini belum terpasang: Robot Pencocok jalan tanpa mata (hanya timestamp + transkrip). Pasang GEMINI_API_KEY di Vercel.';el.style.color='#ffb37a'}}).catch(()=>{});
 const incoming=new URLSearchParams(location.search).get('url');if(incoming)urlEl.value=incoming;
 </script>
 </body>
