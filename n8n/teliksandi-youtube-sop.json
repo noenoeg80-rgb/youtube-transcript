@@ -21,7 +21,7 @@
     },
     {
       "parameters": {
-        "url": "https://youtube-transcript-woad-nine.vercel.app/api/teliksandi",
+        "url": "https://youtube-transcript-woad-nine.vercel.app/api/riset",
         "sendQuery": true,
         "queryParameters": { "parameters": [
           { "name": "mode", "value": "paket" }, { "name": "q", "value": "={{ $json.topik }}" },

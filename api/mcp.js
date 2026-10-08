@@ -94,12 +94,12 @@ function createServer() {
     }
   );
 
-  // ---------------- Teliksandi (kerja bareng Claude) ----------------
+  // ---------------- Alat aplikasi (mandiri) ----------------
   server.registerTool(
-    'teliksandi_cari_youtube',
+    'riset_youtube',
     {
-      title: 'Teliksandi: cari & paketkan video YouTube (SOP)',
-      description: 'Jalankan SOP Teliksandi untuk satu topik: cari video YouTube, seleksi yang relevan, ambil transkrip, pilih bagian yang membahas topik beserta konteks sebelum/sesudah, pasangkan screenshot, lalu cek apakah konteks sudah jelas. Hasil: paket bahan per video (link, judul, kanal, tanggal unggah, transkrip, bagian_terpilih, screenshot + waktu, status LENGKAP/PERLU_LIHAT_PELAN/KURANG_BAHAN, kekurangan). Jangan menebak isi yang ditandai kurang. Untuk topik "terbaru", pakai upload=minggu.',
+      title: 'YouTube Transkrip: riset satu topik',
+      description: 'Riset YouTube untuk satu topik: cari video YouTube, seleksi yang relevan, ambil transkrip, pilih bagian yang membahas topik beserta konteks sebelum/sesudah, pasangkan screenshot, lalu cek apakah konteks sudah jelas. Hasil: paket bahan per video (link, judul, kanal, tanggal unggah, transkrip, bagian_terpilih, screenshot + waktu, status LENGKAP/PERLU_LIHAT_PELAN/KURANG_BAHAN, kekurangan). Jangan menebak isi yang ditandai kurang. Untuk topik "terbaru", pakai upload=minggu.',
       inputSchema: {
         topik: z.string().min(2).max(120).describe('Topik perintah Ombeck, mis. "AI agent terbaru" atau "rumah subsidi solo".'),
         upload: z.enum(['hari', 'minggu', 'bulan', 'semua']).optional().describe('Batas tanggal unggah. Default: minggu bila topik memuat "terbaru", selain itu bulan.'),
@@ -122,7 +122,7 @@ function createServer() {
         }
         return ok({ perintah: topik, upload: up, ditemukan: videos.length, relevan: relevan.length, paket,
           kandidat_lain: relevan.slice(jumlah).map((v) => ({ link: v.url, judul: v.title, kanal: v.channel, unggah: v.published_text })),
-          langkah_berikut: 'Tinjau paket. Kirim yang layak dengan teliksandi_kirim_usulan (jenis paket_youtube). Bagian di perlu_lihat_pelan jangan ditebak.' });
+          langkah_berikut: 'Tinjau paket. Agen yang memakai aplikasi ini (mis. Teliksandi) menyimpan paket lewat alatnya sendiri. Bagian di perlu_lihat_pelan jangan ditebak.' });
       } catch (e) { return fail(e); }
     }
   );
@@ -130,7 +130,7 @@ function createServer() {
   server.registerTool(
     'teliksandi_bank_data',
     {
-      title: 'Teliksandi: baca Bank Data',
+      title: '[Integrasi Teliksandi] baca Bank Data',
       description: 'Baca Bank Data Teliksandi milik Ombeck (hanya baca). tabel: konten (berita & video), video (detail video + transkrip + screenshot), tren, kesimpulan, misi, tempat, akun, kamus. Pakai sebelum mencari, supaya tidak mengulang pekerjaan yang sudah ada.',
       inputSchema: {
         tabel: z.enum(['konten', 'video', 'tren', 'kesimpulan', 'misi', 'tempat', 'akun', 'kamus']),
@@ -152,8 +152,8 @@ function createServer() {
   server.registerTool(
     'teliksandi_kirim_usulan',
     {
-      title: 'Teliksandi: kirim usulan ke Bank Data',
-      description: 'Kirim hasil kerja ke antrean tinjauan Teliksandi. Claude/Hermes meninjau dulu sebelum masuk Bank Data utama. jenis: paket_youtube (isi = satu paket dari teliksandi_cari_youtube), kesimpulan (isi = {judul, isi, bukti}), temuan, ide_konten. Hanya data publik; jangan sertakan nomor HP atau nama orang pribadi. Kuota 150 usulan per 24 jam.',
+      title: '[Integrasi Teliksandi] kirim usulan ke Bank Data',
+      description: 'Kirim hasil kerja ke antrean tinjauan Teliksandi. Claude/Hermes meninjau dulu sebelum masuk Bank Data utama. jenis: paket_youtube (isi = satu paket dari riset_youtube), kesimpulan (isi = {judul, isi, bukti}), temuan, ide_konten. Hanya data publik; jangan sertakan nomor HP atau nama orang pribadi. Kuota 150 usulan per 24 jam.',
       inputSchema: {
         jenis: z.enum(['paket_youtube', 'kesimpulan', 'temuan', 'ide_konten']),
         perintah: z.string().max(300).describe('Topik/perintah Ombeck yang sedang dikerjakan.'),

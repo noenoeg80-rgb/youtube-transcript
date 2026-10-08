@@ -1,4 +1,4 @@
-// Robot Pencocok (Teliksandi): matches each screenshot to the transcript around its timestamp
+// Robot Pencocok (YouTube Transkrip): matches each screenshot to the transcript around its timestamp
 // and describes what is SEEN, so ChatGPT (text-only) receives visual context, not just words.
 //
 // POST /api/cocok  { video_id, title, items:[{ start, clock, label, context, image /* data:image/jpeg;base64 */, exact }] }
@@ -29,7 +29,7 @@ function dataUrlParts(d) {
 async function withGemini(video, items) {
   const key = process.env.GEMINI_API_KEY;
   const parts = [{
-    text: `Kamu adalah Robot Pencocok Teliksandi. Untuk SETIAP gambar di bawah, tulis dalam bahasa Indonesia:
+    text: `Kamu adalah Robot Pencocok YouTube Transkrip. Untuk SETIAP gambar di bawah, tulis dalam bahasa Indonesia:
 1. deskripsi_gambar: apa yang terlihat (orang/produk/teks di layar/angka/grafik/lokasi), 1-3 kalimat, hanya yang benar-benar tampak.
 2. cocok: "ya" jika gambar sesuai dengan kutipan transkrip di detik itu, "sebagian", atau "tidak".
 3. catatan: informasi tambahan dari gambar yang TIDAK ada di transkrip (harga di layar, nama merek, tulisan, tempat), atau "-" bila tidak ada.
