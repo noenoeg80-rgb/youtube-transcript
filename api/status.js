@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     google_drive: process.env.GOOGLE_CLIENT_ID ? 'TERPASANG' : 'BELUM',
     waktu: new Date().toISOString(),
   };
-  const models = (process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : []).concat(['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-flash-lite-latest', 'gemini-2.0-flash']).filter((m, i, a) => a.indexOf(m) === i);
+  const models = (process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : []).concat(['gemini-flash-latest', 'gemini-3.8-flash', 'gemini-flash-lite-latest', 'gemini-3.8-flash-lite']).filter((m, i, a) => a.indexOf(m) === i);
   out.model_cadangan = models.slice(1);
   if (key && req.url.includes('tes=1')) {
     // Uji 1 panggilan teks ringan ke Gemini supaya tahu kuncinya valid.

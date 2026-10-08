@@ -11,9 +11,9 @@
 export const config = { maxDuration: 60 };
 
 // Model utama + cadangan: saat satu model penuh (high demand / 429 / 503), coba model berikutnya.
-const MODELS = (process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : []).concat(['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-flash-lite-latest', 'gemini-2.0-flash']).filter((m, i, a) => a.indexOf(m) === i);
+const MODELS = (process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : []).concat(['gemini-flash-latest', 'gemini-3.8-flash', 'gemini-flash-lite-latest', 'gemini-3.8-flash-lite']).filter((m, i, a) => a.indexOf(m) === i);
 const MODEL = MODELS[0];
-const retryable = (msg) => /high demand|overloaded|try again later|resource.*exhausted|429|503|unavailable/i.test(String(msg || ''));
+const retryable = (msg) => /high demand|overloaded|try again later|resource.*exhausted|429|503|unavailable|no longer available|not found|not supported|does not support/i.test(String(msg || ''));
 
 function readBody(req) {
   return new Promise((ok, no) => {
