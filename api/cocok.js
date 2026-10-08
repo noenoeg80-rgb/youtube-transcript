@@ -29,6 +29,21 @@ function dataUrlParts(d) {
   return m ? { mime: m[1], data: m[2] } : null;
 }
 
+// Items may carry image_url (public https) instead of a data URL; the robot downloads it (max 2 MB).
+async function hydrate(items) {
+  return Promise.all(items.map(async (it) => {
+    if (it.image || !/^https:\/\/(i\d*\.ytimg\.com|img\.youtube\.com)\//.test(it.image_url || '')) return it;
+    try {
+      const r = await fetch(it.image_url);
+      if (!r.ok) return it;
+      const buf = Buffer.from(await r.arrayBuffer());
+      if (buf.length > 2_000_000) return it;
+      const mime = r.headers.get('content-type')?.split(';')[0] || 'image/jpeg';
+      return { ...it, image: `data:${mime};base64,${buf.toString('base64')}` };
+    } catch { return it; }
+  }));
+}
+
 async function withGemini(video, items) {
   const key = process.env.GEMINI_API_KEY;
   const parts = [{
@@ -97,7 +112,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') { res.statusCode = 405; res.end(JSON.stringify({ error: 'Gunakan POST.' })); return; }
   try {
     const body = await readBody(req);
-    const items = Array.isArray(body.items) ? body.items.slice(0, 8) : [];
+    const items = await hydrate(Array.isArray(body.items) ? body.items.slice(0, 8) : []);
     if (!items.length) { res.statusCode = 400; res.end(JSON.stringify({ error: 'Butuh items[].' })); return; }
     let out;
     if (process.env.GEMINI_API_KEY) {
