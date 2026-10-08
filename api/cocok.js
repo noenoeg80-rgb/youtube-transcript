@@ -106,16 +106,18 @@ Video: ${video.title || video.video_id}`,
   throw lastErr || new Error('Semua model Gemini sedang penuh.');
 }
 
-function withoutEyes(items) {
+function withoutEyes(items, alasan) {
+  const sebab = alasan ? `Mata gagal: ${alasan}` : 'Kunci Gemini belum dipasang di server.';
   return {
     mode: 'tanpa_mata',
+    alasan: sebab,
     items: items.map((it) => ({
       start: it.start,
-      deskripsi_gambar: it.exact ? 'Gambar di detik ini belum dilihat robot (kunci Gemini belum dipasang).' : 'Gambar terdekat, bukan detik tepat; belum dilihat robot.',
+      deskripsi_gambar: `Gambar belum dilihat robot. ${sebab}`,
       cocok: 'belum_dicek',
-      catatan: it.exact ? '-' : 'Pakai "Lihat pelan" untuk memastikan konteks visual.',
+      catatan: it.exact ? '-' : 'Gambar bukan detik tepat; pakai "Lihat pelan" untuk memastikan konteks visual.',
     })),
-    ringkasan: 'Robot mencocokkan hanya lewat timestamp dan transkrip; isi gambar belum dideskripsikan. Pasang GEMINI_API_KEY di Vercel untuk mengaktifkan mata.',
+    ringkasan: `Robot mencocokkan hanya lewat timestamp dan transkrip; isi gambar belum dideskripsikan. ${sebab}`,
   };
 }
 
@@ -130,7 +132,7 @@ export default async function handler(req, res) {
     let out;
     if (process.env.GEMINI_API_KEY) {
       try { out = await withGemini({ video_id: body.video_id, title: body.title }, items); }
-      catch (e) { out = { ...withoutEyes(items), galat_mata: e?.message || 'Gemini gagal' }; }
+      catch (e) { console.error('cocok/gemini', e?.message); out = { ...withoutEyes(items, e?.message || 'Gemini gagal'), galat_mata: e?.message || 'Gemini gagal' }; }
     } else out = withoutEyes(items);
     // merge back clock/label so the client can render without re-joining
     const byStart = new Map(items.map((i) => [Number(i.start), i]));
