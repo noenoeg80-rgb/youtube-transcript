@@ -13,6 +13,14 @@ export default async function handler(req, res) {
   };
   const models = (process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : []).concat(['gemini-flash-latest', 'gemini-3.8-flash', 'gemini-flash-lite-latest', 'gemini-3.8-flash-lite']).filter((m, i, a) => a.indexOf(m) === i);
   out.model_cadangan = models.slice(1);
+  if (key && req.url.includes('model=1')) {
+    try {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=${encodeURIComponent(key)}`);
+      const d = await r.json();
+      out.model_tersedia = (d.models || []).filter((m) => (m.supportedGenerationMethods || []).includes('generateContent')).map((m) => String(m.name).replace(/^models\//, ''));
+      if (!r.ok) out.model_tersedia_galat = d?.error?.message;
+    } catch (e) { out.model_tersedia_galat = e?.message; }
+  }
   if (key && req.url.includes('tes=1')) {
     // Uji 1 panggilan teks ringan ke Gemini supaya tahu kuncinya valid.
     out.uji_mata = [];

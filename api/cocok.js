@@ -57,8 +57,26 @@ async function hydrate(items) {
   }));
 }
 
+// Ask Google which models THIS key may use for generateContent (cached 10 min). Prefer flash-class vision models.
+let modelCache = { at: 0, list: [] };
+async function liveModels(key) {
+  if (Date.now() - modelCache.at < 600000 && modelCache.list.length) return modelCache.list;
+  try {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=${encodeURIComponent(key)}`);
+    const d = await r.json();
+    const names = (d.models || []).filter((m) => (m.supportedGenerationMethods || []).includes('generateContent')).map((m) => String(m.name).replace(/^models\//, ''));
+    const rank = (n) => (/flash/.test(n) ? 0 : /pro/.test(n) ? 1 : 2) + (/lite/.test(n) ? 0.5 : 0) + (/preview|exp|tts|image|embedding|audio|live|native/.test(n) ? 10 : 0);
+    const list = names.filter((n) => /gemini/.test(n) && !/embedding|tts|image-generation|audio|live|native-audio/.test(n)).sort((a, b) => rank(a) - rank(b));
+    if (list.length) modelCache = { at: Date.now(), list };
+    return list;
+  } catch { return []; }
+}
+
 async function withGemini(video, items) {
   const key = process.env.GEMINI_API_KEY;
+  const live = await liveModels(key);
+  const candidates = [...MODELS.filter((m) => !live.length || live.includes(m)), ...live.filter((m) => !MODELS.includes(m))].slice(0, 6);
+  const errors = [];
   const parts = [{
     text: `Kamu adalah Robot Pencocok YouTube Transkrip. Untuk SETIAP gambar di bawah, tulis dalam bahasa Indonesia:
 1. deskripsi_gambar: apa yang terlihat (orang/produk/teks di layar/angka/grafik/lokasi), 1-3 kalimat, hanya yang benar-benar tampak.
@@ -76,7 +94,7 @@ Video: ${video.title || video.video_id}`,
     else parts.push({ text: '(gambar tidak tersedia)' });
   }
   let lastErr = null;
-  for (const model of MODELS) {
+  for (const model of candidates) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 40000);
     try {
@@ -89,21 +107,22 @@ Video: ${video.title || video.video_id}`,
       const d = await r.json();
       if (!r.ok) {
         const msg = d?.error?.message || `Gemini HTTP ${r.status}`;
-        if (retryable(msg) || retryable(r.status)) { lastErr = new Error(`${model}: ${msg}`); continue; }
-        throw new Error(msg);
+        errors.push(`${model}: ${msg.slice(0, 160)}`);
+        if (retryable(msg) || retryable(r.status)) { lastErr = new Error(errors.join(' | ')); continue; }
+        throw new Error(errors.join(' | '));
       }
       const text = d?.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('') || '{}';
       const out = JSON.parse(text.replace(/^```json\s*|```$/g, ''));
       return { mode: 'mata', model, ...out };
     } catch (e) {
-      if (e?.name === 'AbortError') { lastErr = new Error(`${model}: waktu habis`); continue; }
-      if (retryable(e?.message)) { lastErr = e; continue; }
+      if (e?.name === 'AbortError') { errors.push(`${model}: waktu habis`); lastErr = new Error(errors.join(' | ')); continue; }
+      if (retryable(e?.message)) { lastErr = new Error(errors.join(' | ')); continue; }
       throw e;
     } finally {
       clearTimeout(timer);
     }
   }
-  throw lastErr || new Error('Semua model Gemini sedang penuh.');
+  throw lastErr || new Error('Tidak ada model Gemini yang bisa dipakai kunci ini: ' + (live.join(', ') || 'daftar kosong'));
 }
 
 function withoutEyes(items, alasan) {
