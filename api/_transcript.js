@@ -38,7 +38,50 @@ export function validTranscript(text) {
   if (t.length <= 20) return false;
   if (/^\s*(?:<!doctype|<html|\{\s*"(?:error|detail)"|(?:error|not found|unavailable|access denied|rate limit)\b)/i.test(t)) return false;
   if (t.length < 1500 && /(high volume|rate limit|too many requests|higher rate limits|api key)/i.test(t)) return false;
+  if (/has no auto-generated captions|transcript cannot be extracted/i.test(t.slice(0, 2000))) return false;
   return true;
+}
+
+// Auto-captions from the free source repeat each phrase 2-3x ("A B. A B. A B.").
+// Collapse immediately repeated word sequences (longest first).
+export function collapseRepeats(text) {
+  let w = String(text || '').split(/\s+/).filter(Boolean);
+  const key = (a) => a.join(' ').toLowerCase().replace(/[.,!?;:]+/g, '');
+  for (let L = Math.min(40, Math.floor(w.length / 2)); L >= 2; L--) {
+    const out = [];
+    let i = 0;
+    while (i < w.length) {
+      if (i + 2 * L <= w.length) {
+        const k = key(w.slice(i, i + L));
+        let j = i + L;
+        while (j + L <= w.length && key(w.slice(j, j + L)) === k) j += L;
+        if (j > i + L) { out.push(...w.slice(i, i + L)); i = j; continue; }
+      }
+      out.push(w[i]);
+      i += 1;
+    }
+    w = out;
+  }
+  return w.join(' ');
+}
+
+// Free source format: header lines, then "## Transcript", then "[m:ss] text" blocks.
+// Returns { body, segments, duration } with repeats collapsed.
+export function parseFreeTranscript(raw) {
+  const s = String(raw || '');
+  const dur = s.match(/Duration:\s*((?:\d+:)?\d+:\d{2})/);
+  const toSec = (c) => c.split(':').map(Number).reduce((a, b) => a * 60 + b, 0);
+  const idx = s.indexOf('## Transcript');
+  const body = idx >= 0 ? s.slice(idx + 13) : s;
+  const segments = [];
+  const re = /\[((?:\d+:)?\d+:\d{2})\]\s*([\s\S]*?)(?=\n?\s*\[(?:\d+:)?\d+:\d{2}\]|$)/g;
+  let m;
+  while ((m = re.exec(body))) {
+    const text = collapseRepeats(m[2].replace(/\s+/g, ' ').trim());
+    if (text) segments.push({ start: toSec(m[1]), text });
+  }
+  const text = segments.length ? segments.map((x) => x.text).join(' ') : collapseRepeats(body.replace(/\s+/g, ' ').trim());
+  return { text, segments: segments.length ? segments : null, duration: dur ? toSec(dur[1]) : 0 };
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -133,7 +176,8 @@ async function fromFreeSource(id, requestedLanguage) {
       if (!r.ok) { lastError = `Sumber gratis merespons HTTP ${r.status}.`; continue; }
       const text = await r.text();
       if (!validTranscript(text)) { lastError = 'Sumber gratis menolak (batas akses) atau tidak ada caption.'; continue; }
-      return { text, language: lang || 'auto' };
+      const parsed = parseFreeTranscript(text);
+      return { text: parsed.text, segments: parsed.segments, duration: parsed.duration, raw_header: text.slice(0, text.indexOf('## Transcript') > 0 ? text.indexOf('## Transcript') : 0), language: lang || 'auto' };
     } catch (e) {
       lastError = e?.name === 'AbortError' ? 'Sumber gratis melebihi batas waktu.' : 'Tidak dapat mengakses sumber gratis.';
     }
@@ -171,7 +215,7 @@ export async function getTranscript(input, language = 'auto', budgetMs = 50000, 
       if (validTranscript(res.text)) {
         const out = { text: res.text, language: res.language, source: 'supadata', video_id: id, source_url: sourceUrl, title: await titlePromise };
         if (res.segments) out.moments = pickMoments(res.segments);
-        if (withTimestamps && res.segments) {
+        if ((withTimestamps || options.segments) && res.segments) {
           out.segments = res.segments;
           out.timed_text = timedText(res.segments);
         }
@@ -185,8 +229,17 @@ export async function getTranscript(input, language = 'auto', budgetMs = 50000, 
   if (id) {
     try {
       const res = await fromFreeSource(id, language);
-      const out = { ...res, source: 'gratis', video_id: id, source_url: sourceUrl, title: await titlePromise };
-      if (withTimestamps) out.timestamps_note = 'Sumber gratis tidak menyediakan timestamp; butuh SUPADATA_API_KEY.';
+      const { segments, raw_header, ...rest } = res;
+      const out = { ...rest, source: 'gratis', video_id: id, source_url: sourceUrl, title: await titlePromise };
+      if (segments) {
+        out.moments = pickMoments(segments);
+        if (withTimestamps || options.segments) {
+          out.segments = segments;
+          out.timed_text = timedText(segments);
+        }
+      } else if (withTimestamps) {
+        out.timestamps_note = 'Sumber gratis tidak memberi timestamp untuk video ini.';
+      }
       return out;
     } catch (e) {
       errors.push(e?.message || 'Sumber gratis gagal.');

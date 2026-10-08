@@ -7,6 +7,7 @@
 import { searchYouTube } from './_ytsearch.js';
 import { getTranscript, clock } from './_transcript.js';
 import { storyboardSpec, parseSpec, frameAt } from './_storyboard.js';
+import { buildPackage, queryWords, countWord } from './_paket.js';
 
 export const config = { maxDuration: 60 };
 
@@ -112,6 +113,25 @@ export default async function handler(req, res) {
   try {
     const videos = await searchYouTube(q, { limit: n, upload });
     const base = origin(req);
+    if (u.searchParams.get('mode') === 'paket') {
+      // SOP Teliksandi: seleksi → paket bahan (transkrip + bagian terpilih + screenshot + cek konteks)
+      const words = queryWords(q);
+      const relevan = videos.filter((v) => {
+        const low = `${v.title} ${v.snippet}`.toLowerCase();
+        return words.some((w) => countWord(low, w) > 0);
+      });
+      const ditolak = videos.filter((v) => !relevan.includes(v)).map((v) => ({ link: v.url, judul: v.title, alasan: 'judul/deskripsi tidak menyebut topik' }));
+      const take = Math.min(3, Math.max(1, Number(u.searchParams.get('deep')) || 2));
+      const paket = [];
+      for (const v of relevan.slice(0, take)) {
+        const left = deadline - Date.now();
+        if (left < 12000) break;
+        paket.push(await buildPackage(v, q, base, Math.min(30000, left - 6000)));
+      }
+      res.statusCode = 200;
+      res.end(JSON.stringify({ perintah: q, upload, ditemukan: videos.length, relevan: relevan.length, ditolak, paket, kandidat_lain: relevan.slice(take).map((v) => ({ link: v.url, judul: v.title, kanal: v.channel, unggah: v.published_text })), at: new Date().toISOString() }));
+      return;
+    }
     const details = [];
     for (const v of videos.slice(0, deepN)) {
       if (Date.now() > deadline - 10000) break;
