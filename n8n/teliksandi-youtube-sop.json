@@ -1,5 +1,5 @@
 {
-  "name": "Teliksandi · SOP Ambil Data YouTube (alur baku v1.2, mata wajib)",
+  "name": "Teliksandi · SOP Ambil Data YouTube (alur baku v1.2, mata wajib, paket GPT terkunci)",
   "nodes": [
     {
       "parameters": {
@@ -216,7 +216,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// L · Kumpulkan paket bahan (format serah-terima baku). Gambar berat TIDAK ikut: hanya deskripsi + waktu + link detik.\nreturn $input.all().map(i => {\n  const p = i.json;\n  return { json: {\n    perintah: p.perintah, link: p.link, judul: p.judul, kanal: p.kanal,\n    tanggal_unggah: p.tanggal_unggah_perkiraan || p.tanggal_unggah_teks,\n    transkrip: p.transkrip,\n    bagian_terpilih: (p.bagian_terpilih||[]).map(b => ({ start: b.start, clock: b.clock, kutipan: b.kutipan, konteks_sebelum: b.konteks_sebelum, konteks_sesudah: b.konteks_sesudah, link_detik: b.link_detik, screenshot: b.screenshot ? { waktu: b.screenshot.waktu, tepat: b.screenshot.tepat, src: b.screenshot.src } : null })),\n    konteks_visual: p.konteks_visual, ringkasan_visual: p.ringkasan_visual, mode_robot: p.robot_pencocok?.mode, mata_aktif: p.mata_aktif === true,\n    catatan_konteks: p.catatan_konteks, status: p.status, kekurangan: p.kekurangan || [], penyimpangan: p.penyimpangan || [], tugas_lihat_pelan: p.tugas_lihat_pelan || [],\n    sop_versi: '1.1', diproses_n8n: new Date().toISOString()\n  } };\n});"
+        "jsCode": "// L · Kumpulkan paket bahan (format serah-terima baku). Gambar berat TIDAK ikut: hanya deskripsi + waktu + link detik.\nreturn $input.all().map(i => {\n  const p = i.json;\n  return { json: {\n    perintah: p.perintah, link: p.link, judul: p.judul, kanal: p.kanal,\n    tanggal_unggah: p.tanggal_unggah_perkiraan || p.tanggal_unggah_teks,\n    transkrip: p.transkrip,\n    bagian_terpilih: (p.bagian_terpilih||[]).map(b => ({ start: b.start, clock: b.clock, kutipan: b.kutipan, konteks_sebelum: b.konteks_sebelum, konteks_sesudah: b.konteks_sesudah, link_detik: b.link_detik, screenshot: b.screenshot ? { waktu: b.screenshot.waktu, tepat: b.screenshot.tepat, src: b.screenshot.src } : null })),\n    konteks_visual: p.konteks_visual, ringkasan_visual: p.ringkasan_visual, mode_robot: p.robot_pencocok?.mode, mata_aktif: p.mata_aktif === true,\n    catatan_konteks: p.catatan_konteks, status: p.status, kekurangan: p.kekurangan || [], penyimpangan: p.penyimpangan || [], tugas_lihat_pelan: p.tugas_lihat_pelan || [],\n    sop_versi: '1.2', diproses_n8n: new Date().toISOString()\n  } };\n});"
       },
       "id": "l1",
       "name": "L · Kumpulkan paket bahan",
@@ -254,7 +254,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2420,
+        2530,
         220
       ],
       "continueOnFail": true
@@ -286,7 +286,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2640,
+        2750,
         220
       ],
       "continueOnFail": true
@@ -302,6 +302,19 @@
       "position": [
         660,
         420
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// L2 · Perakit paket GPT (KUNCI). Teks untuk GPT dirakit di sini, dengan urutan tetap:\n// 1 perintah → 2 sumber → 3 momen penting → 4 KONTEKS VISUAL (hasil mata) → 5 transkrip → 6 aturan.\n// Tanpa konteks visual yang sah, bidang untuk_gpt TIDAK dibuat dan paket ditandai.\nreturn $input.all().map(i => {\n  const p = i.json;\n  const bagian = Array.isArray(p.bagian_terpilih) ? p.bagian_terpilih : [];\n  const momen = bagian.map(b => `[${b.clock}] ${b.kutipan} ${b.link_detik||''}`).join('\\n');\n  const mataSah = p.mata_aktif === true && (p.konteks_visual||'').trim().length > 0;\n  const penyimpangan = [...(p.penyimpangan||[])];\n  if (!mataSah) penyimpangan.push('PAKET GPT TIDAK DIRAKIT: konteks visual dari mata belum ada');\n  const untuk_gpt = mataSah ? [\n    'Analisa transkrip video ini secara menyeluruh. Buat: ringkasan eksekutif, poin penting, klaim utama, angka/fakta, entitas, insight bisnis, peluang, risiko, hal yang perlu diverifikasi, kesimpulan praktis. Bedakan fakta, opini, spekulasi. Jangan mengarang bagian yang hilang.',\n    '', `Sumber video: ${p.link}`, `Judul: ${p.judul} · Kanal: ${p.kanal} · Unggah: ${p.tanggal_unggah||'-'}`,\n    '', 'MOMEN PENTING:', momen || '(tidak ada)',\n    '', 'KONTEKS VISUAL (hasil Robot Pencocok, mata aktif):', p.konteks_visual, `Ringkasan visual: ${p.ringkasan_visual||'-'}`,\n    'Gunakan konteks visual ini saat menganalisis. Gambar yang \"cocok: sebagian/tidak\" berarti ucapan dan tampilan tidak sepenuhnya sejalan; sebutkan itu. Jangan menebak isi gambar di luar deskripsi.',\n    '', 'TRANSKRIP:', p.transkrip || '(tidak ada transkrip)',\n    '', `Status bahan: ${p.status}. Kekurangan: ${(p.kekurangan||[]).join('; ')||'-'}`\n  ].join('\\n') : null;\n  return { json: { ...p, penyimpangan, untuk_gpt, paket_gpt_sah: mataSah, rakit_versi: '1.0' } };\n});"
+      },
+      "id": "l2",
+      "name": "L2 · Perakit paket GPT (kunci: transkrip + konteks visual)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2310,
+        220
       ]
     }
   ],
@@ -434,7 +447,7 @@
       "main": [
         [
           {
-            "node": "Q · Bagian Pengangkutan (Bank Data KEPO)",
+            "node": "L2 · Perakit paket GPT (kunci: transkrip + konteks visual)",
             "type": "main",
             "index": 0
           }
@@ -446,6 +459,17 @@
         [
           {
             "node": "R · Hermes mengingat (memori belajar)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "L2 · Perakit paket GPT (kunci: transkrip + konteks visual)": {
+      "main": [
+        [
+          {
+            "node": "Q · Bagian Pengangkutan (Bank Data KEPO)",
             "type": "main",
             "index": 0
           }

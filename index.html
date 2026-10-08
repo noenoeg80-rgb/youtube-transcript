@@ -103,6 +103,9 @@ async function loadTranscript(){
  show(lastErr,false);resetBtn();
 }
 
+// Kunci alur: kalau ada gambar tapi robot belum dijalankan, ingatkan dulu (sekali) sebelum bagikan.
+let skipVisualOnce=false;
+function confirmSkipVisual(){ if(skipVisualOnce)return true; show('Robot Pencocok belum dijalankan: GPT akan menerima transkrip tanpa konteks visual. Tekan “🤖 Cocokkan” dulu, atau tekan Bagikan sekali lagi untuk tetap kirim.',false); skipVisualOnce=true; return false; }
 async function fallbackCopy(payload){
  try{await navigator.clipboard.writeText(payload);show('Teks analisis sudah disalin. Buka ChatGPT lalu tempel.',true)}catch{show('Gagal membuka menu Bagikan. Coba lagi.',false)}
 }
@@ -111,6 +114,7 @@ $('#share').addEventListener('click',async()=>{
  const text=transcriptEl.value.trim();if(!text)return;
  const moments=last?.moments?.length?`\n\nMOMEN PENTING (deteksi otomatis):\n${last.moments.map(m=>`[${clock(m.start)}] ${m.label} ${jump(m.start)}`).join('\n')}`:'';
  const visual=last?.cocok?`\n\nKONTEKS VISUAL (hasil Robot Pencocok, mode ${last.cocok.mode}):\n${last.cocok.items.map(i=>`[${i.clock}] GAMBAR: ${i.deskripsi_gambar} | cocok dengan transkrip: ${i.cocok}${i.catatan&&i.catatan!=='-'?` | info tambahan dari gambar: ${i.catatan}`:''}`).join('\n')}\nRingkasan visual: ${last.cocok.ringkasan}\nGunakan konteks visual ini saat menganalisis; bagian yang "belum_dicek" jangan ditebak.`:'';
+ if(last?.shots?.length&&!last?.cocok&&!confirmSkipVisual()){return}
  const payload=`${COMPLETE_PROMPT}\n\nSumber video:\n${urlEl.value.trim()}${moments}${visual}\n\nTRANSCRIPT:\n${text}\n\nSetelah analisis, simpan hasilnya ke Google Drive folder “${folderName()}” bila kamu punya akses Drive.`;
  if(navigator.share){
    try{await navigator.share({title:'Analisa Transcript YouTube',text:payload});return}catch(e){if(e?.name==='AbortError')return}
@@ -118,7 +122,7 @@ $('#share').addEventListener('click',async()=>{
  await fallbackCopy(payload);
 });
 
-$('#new').addEventListener('click',()=>{last=null;$('#clearShots').classList.add('hidden');$('#cocok').classList.add('hidden');$('#cocok').textContent='';$('#cocokBtn').classList.add('hidden');try{slowPlayer?.destroy()}catch{};slowPlayer=null;$('#player').classList.add('hidden');$('#player').innerHTML='<div id="yt"></div>';$('#moments').classList.add('hidden');$('#shots').textContent='';$('#save').classList.add('hidden');urlEl.value='';transcriptEl.value='';result.classList.add('hidden');msg.className='status hidden';window.scrollTo({top:0,behavior:'smooth'});urlEl.focus()});
+$('#new').addEventListener('click',()=>{last=null;skipVisualOnce=false;$('#clearShots').classList.add('hidden');$('#cocok').classList.add('hidden');$('#cocok').textContent='';$('#cocokBtn').classList.add('hidden');try{slowPlayer?.destroy()}catch{};slowPlayer=null;$('#player').classList.add('hidden');$('#player').innerHTML='<div id="yt"></div>';$('#moments').classList.add('hidden');$('#shots').textContent='';$('#save').classList.add('hidden');urlEl.value='';transcriptEl.value='';result.classList.add('hidden');msg.className='status hidden';window.scrollTo({top:0,behavior:'smooth'});urlEl.focus()});
 // ---------- Google Drive: simpan ke folder "materi apgred" ----------
 // Token OAuth hanya di browser (sessionStorage), scope drive.file: aplikasi hanya melihat file yang ia buat sendiri.
 const driveText=$('#driveText'),connectBtn=$('#connect'),saveBtn=$('#save'),autoEl=$('#autosave');
