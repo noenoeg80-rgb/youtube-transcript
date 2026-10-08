@@ -22,7 +22,7 @@
 </section>
 
 <section class="panel">
-<label for="url">Link YouTube</label>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><label for="url" style="margin:0">Link YouTube</label><button id="refreshBtn" type="button" style="min-height:36px;padding:6px 12px;font-size:12px;border-radius:10px;background:#2a2a33;color:#eeeef2">↻ Link lain</button></div>
 <input id="url" inputmode="url" autocapitalize="none" autocomplete="off" placeholder="https://youtu.be/...">
 <label class="ts" for="ts"><input id="ts" type="checkbox"> Dengan timestamp [mm:ss]</label>
 <label class="ts" for="autosave"><input id="autosave" type="checkbox" checked> Simpan otomatis ke Google Drive</label>
@@ -43,6 +43,7 @@
 <p id="shotHint" class="hint hidden"></p>
 <div id="player" class="hidden"><div id="yt"></div></div>
 <div id="shots" class="shots"></div>
+<button id="clearShots" class="secondary hidden" type="button" style="min-height:40px;font-size:13px">🧹 Hapus gambar (ringankan)</button>
 </div>
 <button id="share" class="primary">Bagikan ke ChatGPT</button>
 <button id="save" class="secondary hidden" type="button">Simpan ke Google Drive</button>
@@ -115,7 +116,7 @@ $('#share').addEventListener('click',async()=>{
  await fallbackCopy(payload);
 });
 
-$('#new').addEventListener('click',()=>{last=null;$('#cocok').classList.add('hidden');$('#cocok').textContent='';$('#cocokBtn').classList.add('hidden');try{slowPlayer?.destroy()}catch{};slowPlayer=null;$('#player').classList.add('hidden');$('#player').innerHTML='<div id="yt"></div>';$('#moments').classList.add('hidden');$('#shots').textContent='';$('#save').classList.add('hidden');urlEl.value='';transcriptEl.value='';result.classList.add('hidden');msg.className='status hidden';window.scrollTo({top:0,behavior:'smooth'});urlEl.focus()});
+$('#new').addEventListener('click',()=>{last=null;$('#clearShots').classList.add('hidden');$('#cocok').classList.add('hidden');$('#cocok').textContent='';$('#cocokBtn').classList.add('hidden');try{slowPlayer?.destroy()}catch{};slowPlayer=null;$('#player').classList.add('hidden');$('#player').innerHTML='<div id="yt"></div>';$('#moments').classList.add('hidden');$('#shots').textContent='';$('#save').classList.add('hidden');urlEl.value='';transcriptEl.value='';result.classList.add('hidden');msg.className='status hidden';window.scrollTo({top:0,behavior:'smooth'});urlEl.focus()});
 // ---------- Google Drive: simpan ke folder "materi apgred" ----------
 // Token OAuth hanya di browser (sessionStorage), scope drive.file: aplikasi hanya melihat file yang ia buat sendiri.
 const driveText=$('#driveText'),connectBtn=$('#connect'),saveBtn=$('#save'),autoEl=$('#autosave');
@@ -309,7 +310,7 @@ async function quickShots(){
      if(last!==job)return;
      if(blob){job.shots.push({m,blob,mode:f.exact?'cepat':'terdekat',exact:!!f.exact});renderShot(m,blob,f.exact?'cepat':'terdekat',f)}
    }
-   job.exact=!!d.exact;$('#cocokBtn').classList.toggle('hidden',!job.shots.length);
+   job.exact=!!d.exact;$('#cocokBtn').classList.toggle('hidden',!job.shots.length);$('#clearShots').classList.toggle('hidden',!job.shots.length);
    hint.textContent=d.exact?'Gambar cepat tepat di detik momen penting. Ketuk gambar untuk memperbesar + baca konteksnya.':'YouTube menolak gambar per detik untuk video ini; dipakai gambar resmi terdekat (±25/50/75%). Kalau konteks belum jelas, tekan “Lihat pelan” di bawah gambar.';
    if(hasToken()&&saved[job.video_id]?.doc)await saveShots(job);
  }catch(e){
@@ -369,6 +370,10 @@ async function cocokkan(){
  finally{btn.disabled=false;btn.textContent='🤖 Cocokkan gambar + transkrip (Robot Pencocok)'}
 }
 $('#cocokBtn').addEventListener('click',cocokkan);
+// ↻ Link lain: kosongkan semua, siap tempel link berikutnya (tanpa reload halaman).
+$('#refreshBtn').addEventListener('click',()=>{$('#new').click();navigator.clipboard?.readText?.().then(t=>{if(t&&/youtu\.?be/.test(t)){urlEl.value=t.trim();show('Link dari clipboard ditempel. Tekan Ambil Transcript.')}}).catch(()=>{})});
+// 🧹 Hapus gambar: lepas screenshot dari memori setelah dipakai.
+$('#clearShots').addEventListener('click',()=>{if(last){last.shots.forEach(s=>{try{URL.revokeObjectURL(s.url)}catch{}});last.shots=[]}$('#shots').textContent='';$('#clearShots').classList.add('hidden');$('#cocokBtn').classList.add('hidden');show('Gambar dilepas. Deskripsi robot (kalau sudah dibuat) tetap ikut saat dibagikan.')});
 $('#lb').addEventListener('click',e=>{if(e.target.id==='lb')$('#lb').classList.add('hidden')});
 $('#shotBtn').addEventListener('click',async()=>{
  const btn=$('#shotBtn'),box=$('#player');
