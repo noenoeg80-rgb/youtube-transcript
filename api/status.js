@@ -5,6 +5,7 @@ export default async function handler(req, res) {
   const key = process.env.GEMINI_API_KEY || '';
   const out = {
     app: 'YouTube Transkrip',
+    versi: '1.0.0 (baku, 8 Okt 2026)',
     mata_gemini: key ? 'TERPASANG' : 'BELUM',
     model_mata: process.env.GEMINI_MODEL || 'gemini-flash-latest',
     transkrip_stabil_supadata: process.env.SUPADATA_API_KEY ? 'TERPASANG' : 'BELUM (pakai sumber gratis)',
