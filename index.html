@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#09090b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="YouTube Transkrip">
-<title>YouTube Transkrip</title>
+<meta name="apple-mobile-web-app-title" content="Pakcarik">
+<title>Pakcarik.ai</title>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/icon.svg">
 <style>
@@ -18,7 +18,7 @@
 <main>
 <section class="hero">
 <div class="tag">YOUTUBE → TRANSCRIPT → CHATGPT</div>
-<h1>YouTube Transkrip</h1>
+<h1>Pakcarik.ai</h1>
 <p>Tempel link YouTube → transkrip + screenshot momen penting → Robot Pencocok (mata Gemini) → bagikan ke ChatGPT.</p>
 <p style="margin-top:10px;font-size:12px;color:#77747f">Aplikasi mandiri. Dipakai juga oleh agen Teliksandi → <a href="/teliksandi.html" style="color:#5fe0c5;font-weight:800;text-decoration:none">panel Teliksandi</a></p>
 </section>
@@ -179,7 +179,7 @@ async function ensureFolder(){
  const name=folderName();
  const q=encodeURIComponent(`name='${name.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
  const found=await drive(`drive/v3/files?q=${q}&fields=files(id)&pageSize=1`);
- folderId=found.files?.[0]?.id||(await drive('drive/v3/files?fields=id',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name,mimeType:'application/vnd.google-apps.folder',description:'Materi dari Transcript AI (dan ChatGPT/Claude). Dipakai sebagai referensi insight.'})})).id;
+ folderId=found.files?.[0]?.id||(await drive('drive/v3/files?fields=id',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name,mimeType:'application/vnd.google-apps.folder',description:'Materi dari Pakcarik.ai (dan ChatGPT/Claude). Dipakai sebagai referensi insight.'})})).id;
  try{localStorage.setItem('gfolder',folderId)}catch{}
  return folderId;
 }
@@ -208,7 +208,7 @@ async function saveTranscript(interactive){
    if(!hasToken()){show('Transcript siap. Tekan “Simpan ke Google Drive” untuk menyimpan.');saveBtn.classList.remove('hidden');return}
    saveBtn.disabled=true;
    const parent=await ensureFolder();
-   const f=await upload({name:docName(),mimeType:'application/vnd.google-apps.document',parents:[parent],description:`Transcript AI · ${last.source_url||last.url}`,appProperties:{app:'transcript-ai',kind:'transcript',videoId:last.video_id||''}},new Blob([buildDoc()],{type:'text/plain;charset=utf-8'}));
+   const f=await upload({name:docName(),mimeType:'application/vnd.google-apps.document',parents:[parent],description:`Pakcarik.ai · ${last.source_url||last.url}`,appProperties:{app:'transcript-ai',kind:'transcript',videoId:last.video_id||''}},new Blob([buildDoc()],{type:'text/plain;charset=utf-8'}));
    saved[key]={...(saved[key]||{}),doc:f.id};
    show(`Tersimpan di Google Drive › ${folderName()}.`);
    if(last.shots?.length)await saveShots();
