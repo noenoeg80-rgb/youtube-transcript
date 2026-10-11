@@ -92,7 +92,7 @@ async function loadTranscript(){
    try{
      const q=lang?`?lang=${encodeURIComponent(lang)}`:'';
      const r=await fetch(`https://youtube-transcript.ai/transcript/${id}.txt${q}`);
-     if(!r.ok){lastErr=`Gagal: HTTP ${r.status}`;continue}
+     if(!r.ok){if(lastErr==='Transcript tidak tersedia.')lastErr=`Gagal: HTTP ${r.status}`;continue}
      const text=(await r.text()).trim();
      if(valid(text)){
        showResult({video_id:id,source_url:`https://www.youtube.com/watch?v=${id}`,language:lang||'auto',source:'gratis'},text,'Transcript berhasil diambil.');return
