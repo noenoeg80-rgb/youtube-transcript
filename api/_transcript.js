@@ -3,6 +3,7 @@
 // 2) Fallback: free youtube-transcript.ai source (YouTube only, often rate-limited).
 
 import { pickMoments } from './_moments.js';
+import { fromYouTube } from './_youtube.js';
 
 export function youtubeId(value) {
   const v = String(value || '').trim();
@@ -228,9 +229,13 @@ export async function getTranscript(input, language = 'auto', budgetMs = 50000, 
   }
   if (id) {
     try {
-      const res = await fromFreeSource(id, language);
+      const res = await fromYouTube(id, language).then((r) => ({ ...r, __src: 'youtube' }), async (e) => {
+        errors.push(e?.message || 'YouTube langsung gagal.');
+        return { ...(await fromFreeSource(id, language)), __src: 'gratis' };
+      });
+      const sourceName = res.__src; delete res.__src;
       const { segments, raw_header, ...rest } = res;
-      const out = { ...rest, source: 'gratis', video_id: id, source_url: sourceUrl, title: await titlePromise };
+      const out = { ...rest, source: sourceName, video_id: id, source_url: sourceUrl, title: await titlePromise };
       if (segments) {
         out.moments = pickMoments(segments);
         if (withTimestamps || options.segments) {
