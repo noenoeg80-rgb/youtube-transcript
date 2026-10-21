@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Pak Carik — Pekerja Laptop",
+  "version": "0.1.0",
+  "description": "Ambil transkrip yang tersedia melalui halaman YouTube di laptop, lalu kembalikan ke Pak Carik.",
+  "permissions": ["storage", "alarms"],
+  "host_permissions": ["https://www.youtube.com/*"],
+  "background": {"service_worker": "background.js"},
+  "action": {"default_title": "Buka Pak Carik"},
+  "content_scripts": [
+    {"matches": ["https://youtube-transcript-woad-nine.vercel.app/*"], "js": ["app-bridge.js"], "run_at": "document_idle"},
+    {"matches": ["https://www.youtube.com/watch*"], "js": ["youtube-reader.js"], "run_at": "document_idle"}
+  ]
+}
