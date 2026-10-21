@@ -33,6 +33,18 @@
 <div id="msg" class="status hidden" role="status" aria-live="polite"></div>
 </section>
 
+<section class="panel" id="manualPanel">
+<h2 style="margin-top:0">Pakai transkrip dari akun YouTube</h2>
+<p style="color:#b9b6c2;line-height:1.6">Buka video, masuk dengan akun asli di YouTube bila diperlukan, lalu pilih <b>Tampilkan transkrip</b> pada deskripsi video. Salin teksnya ke sini. Fitur ini tersedia untuk video yang memiliki caption.</p>
+<button id="openYoutube" class="secondary" type="button">Buka video di YouTube / login</button>
+<p class="hint">Login berlangsung di YouTube. Pakcarik tidak menerima sandi atau cookie akun dan tidak bisa membaca status login YouTube.</p>
+<label for="manualText" style="margin-top:18px">Tempel transkrip atau subtitle</label>
+<textarea id="manualText" style="height:160px" placeholder="Tempel teks dari panel transkrip YouTube di sini…"></textarea>
+<label for="subtitleFile" style="margin-top:12px">Atau pilih file TXT, SRT, VTT (maks. 2 MB)</label>
+<input id="subtitleFile" type="file" accept=".txt,.srt,.vtt,text/plain,text/vtt">
+<button id="useManual" class="primary" type="button">Olah transkrip ini</button>
+<p class="hint">Teks diproses di perangkat ini. Ini impor transkrip, bukan transkripsi audio otomatis.</p>
+</section>
 <section id="result" class="panel hidden">
 <div class="head"><div><div class="eyebrow">HASIL</div><h2>Transcript</h2></div><span id="lang" class="lang">AUTO</span></div>
 <textarea id="transcript" spellcheck="false"></textarea>
@@ -72,7 +84,7 @@ function resetBtn(){getBtn.disabled=false;getBtn.textContent='Ambil Transcript'}
 function showResult(d,text,note){
  last={...d,text,url:urlEl.value.trim(),shots:[]};
  transcriptEl.value=text;langEl.textContent=String(d.language||'auto').toUpperCase();result.classList.remove('hidden');show(note);resetBtn();
- renderMoments();result.scrollIntoView({behavior:'smooth',block:'start'});autoSave();quickShots();
+ renderMoments();result.scrollIntoView({behavior:'smooth',block:'start'});autoSave();if(d.source!=='impor')quickShots();
 }
 
 async function loadTranscript(){
@@ -81,27 +93,63 @@ async function loadTranscript(){
  let lastErr='Transcript tidak tersedia.';
  try{
    const ts=$('#ts').checked?'&timestamps=1':'';
-   const r=await fetch(`/api/transcript?url=${encodeURIComponent(urlEl.value.trim())}${ts}`);
+   const r=await fetch(`/api/transcript?url=${encodeURIComponent(urlEl.value.trim())}${ts}`,{signal:AbortSignal.timeout(55000)});
    const d=await r.json();
    if(r.ok&&d.text&&valid(d.text)){
      showResult(d,(d.timed_text||d.text).trim(),ts&&!d.timed_text?'Transcript diambil tanpa timestamp (sumber gratis).':'Transcript berhasil diambil.');return
    }
    if(d.error)lastErr=d.error;
- }catch(e){}
- for(const lang of ['id','en','']){
-   try{
-     const q=lang?`?lang=${encodeURIComponent(lang)}`:'';
-     const r=await fetch(`https://youtube-transcript.ai/transcript/${id}.txt${q}`);
-     if(!r.ok){if(lastErr==='Transcript tidak tersedia.')lastErr=`Gagal: HTTP ${r.status}`;continue}
-     const text=(await r.text()).trim();
-     if(valid(text)){
-       showResult({video_id:id,source_url:`https://www.youtube.com/watch?v=${id}`,language:lang||'auto',source:'gratis'},text,'Transcript berhasil diambil.');return
-     }
-     lastErr='Caption/transcript tidak tersedia.';
-   }catch(e){lastErr=e?.message||'Gagal mengambil transcript.'}
- }
- show(lastErr,false);resetBtn();
+ }catch(e){lastErr=e.name==='TimeoutError'?'Server melewati batas waktu.':'Koneksi ke server gagal.'}
+ show('Pengambilan otomatis belum berhasil. Gunakan panel transkrip dari akun YouTube di bawah. Detail: '+lastErr,false);resetBtn();
+ $('#manualPanel').scrollIntoView({behavior:'smooth',block:'start'});
 }
+
+// Imports are local and preserve supplied words and timestamps; no generated transcript.
+function parseImportedTranscript(raw){
+ const input=String(raw||'').replace(/\r/g,'').trim();
+ if(!input||input.length>2000000)throw new Error('Isi transkrip kosong atau melebihi 2 MB.');
+ const segments=[];let current=null;const plain=[];
+ const seconds=t=>t.replace(',','.').split(':').map(Number).reduce((a,b)=>a*60+b,0);
+ const lines=input.split('\n');
+ const subtitle=/-->/ .test(input);
+ let skipBlock=false;
+ for(let i=0;i<lines.length;i++){
+  let line=lines[i].trim();
+  if(!line){skipBlock=false;continue}
+  if(subtitle&&/^(NOTE|STYLE|REGION)(?:\s|$)/.test(line)){skipBlock=true;continue}
+  if(skipBlock||/^WEBVTT(?:\s|$)/.test(line))continue;
+  if(subtitle&&i+1<lines.length&&lines[i+1].includes('-->'))continue;
+  const cue=line.match(/^(\d{1,}:\d{2}(?::\d{2})?(?:[.,]\d+)?)\s+-->/);
+  const stamp=line.match(/^\[?(\d{1,}:\d{2}(?::\d{2})?(?:[.,]\d+)?)\]?(?:\s+(.*))?$/);
+  if(cue||stamp){
+   current={start:seconds((cue||stamp)[1]),text:''};segments.push(current);
+   line=cue?'':(stamp[2]||'');
+  }
+  if(subtitle)line=line.replace(/<[^>]*>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+  if(line){if(current)current.text+=(current.text?' ':'')+line;else plain.push(line)}
+ }
+ const clean=segments.filter(x=>x.text);
+ const text=[...plain,...clean.map(x=>x.text)].join(' ').trim();
+ if(!text)throw new Error('Tidak ditemukan teks transkrip dalam file ini.');
+ return {text,segments:clean,timed_text:clean.map(x=>'['+clock(x.start)+'] '+x.text).join('\n')};
+}
+$('#openYoutube').addEventListener('click',()=>{
+ const id=videoId(urlEl.value);
+ if(!id){show('Isi link YouTube yang valid terlebih dahulu.',false);urlEl.focus();return}
+ window.open('https://www.youtube.com/watch?v='+encodeURIComponent(id),'_blank','noopener,noreferrer');
+});
+$('#subtitleFile').addEventListener('change',async e=>{
+ const file=e.target.files[0];if(!file)return;
+ if(file.size>2000000||! /\.(txt|srt|vtt)$/i.test(file.name)){show('Pilih TXT, SRT, atau VTT, maksimal 2 MB.',false);e.target.value='';return}
+ try{$('#manualText').value=await file.text();show('File siap. Tekan Olah transkrip ini.')}catch{show('File tidak dapat dibaca.',false)}
+});
+$('#useManual').addEventListener('click',()=>{
+ if(getBtn.disabled){show('Tunggu pengambilan otomatis selesai sebelum mengimpor.',false);return}
+ try{
+  const d=parseImportedTranscript($('#manualText').value),id=videoId(urlEl.value);
+  showResult({...d,video_id:id,source_url:id?'https://www.youtube.com/watch?v='+id:'',language:'auto',source:'impor',moments:[]},$('#ts').checked&&d.timed_text?d.timed_text:d.text,'Transkrip impor siap. Periksa teksnya lalu bagikan ke ChatGPT.');
+ }catch(e){show(e.message,false)}
+});
 
 // Kunci alur: kalau ada gambar tapi robot belum dijalankan, ingatkan dulu (sekali) sebelum bagikan.
 let skipVisualOnce=false;
@@ -122,7 +170,7 @@ $('#share').addEventListener('click',async()=>{
  await fallbackCopy(payload);
 });
 
-$('#new').addEventListener('click',()=>{last=null;skipVisualOnce=false;$('#clearShots').classList.add('hidden');$('#cocok').classList.add('hidden');$('#cocok').textContent='';$('#cocokBtn').classList.add('hidden');try{slowPlayer?.destroy()}catch{};slowPlayer=null;$('#player').classList.add('hidden');$('#player').innerHTML='<div id="yt"></div>';$('#moments').classList.add('hidden');$('#shots').textContent='';$('#save').classList.add('hidden');urlEl.value='';transcriptEl.value='';result.classList.add('hidden');msg.className='status hidden';window.scrollTo({top:0,behavior:'smooth'});urlEl.focus()});
+$('#new').addEventListener('click',()=>{last=null;skipVisualOnce=false;$('#clearShots').classList.add('hidden');$('#cocok').classList.add('hidden');$('#cocok').textContent='';$('#cocokBtn').classList.add('hidden');try{slowPlayer?.destroy()}catch{};slowPlayer=null;$('#player').classList.add('hidden');$('#player').innerHTML='<div id="yt"></div>';$('#moments').classList.add('hidden');$('#shots').textContent='';$('#save').classList.add('hidden');urlEl.value='';transcriptEl.value='';$('#manualText').value='';$('#subtitleFile').value='';result.classList.add('hidden');msg.className='status hidden';window.scrollTo({top:0,behavior:'smooth'});urlEl.focus()});
 // ---------- Google Drive: simpan ke folder "materi apgred" ----------
 // Token OAuth hanya di browser (sessionStorage), scope drive.file: aplikasi hanya melihat file yang ia buat sendiri.
 const driveText=$('#driveText'),connectBtn=$('#connect'),saveBtn=$('#save'),autoEl=$('#autosave');
@@ -135,7 +183,7 @@ function loadScript(src){return new Promise((ok,no)=>{const el=document.createEl
 function hasToken(){return Boolean(token&&tokenExp>Date.now()+60000)}
 function folderName(){return cfg.driveFolderName||'materi apgred'}
 function updateDriveUi(){
- if(!cfg.googleClientId){driveText.textContent='Simpan ke Google Drive belum aktif di server (GOOGLE_CLIENT_ID belum diatur).';connectBtn.classList.add('hidden');saveBtn.classList.add('hidden');return}
+ if(!cfg.googleClientId){autoEl.checked=false;autoEl.disabled=true;driveText.textContent='Google Drive belum tersedia. Transkrip tetap bisa diolah dan dibagikan tanpa login Drive.';connectBtn.classList.add('hidden');saveBtn.classList.add('hidden');return}
  driveText.textContent=hasToken()?`Terhubung · disimpan ke folder “${folderName()}”`:`Hubungkan Google Drive untuk menyimpan ke “${folderName()}”.`;
  connectBtn.textContent=hasToken()?'Terhubung ✓':'Hubungkan';connectBtn.disabled=hasToken();connectBtn.classList.remove('hidden');
  saveBtn.classList.toggle('hidden',!last||Boolean(saved[last.video_id||last.url]?.doc));
